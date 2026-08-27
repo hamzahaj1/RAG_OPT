@@ -61,9 +61,11 @@ résolu, échec explicite sinon (FR-007) ; zéro modification de comportement de
 Alpha-Scope V3 intégral sur les scripts eux-mêmes, qui restent hors corpus
 (R8) ; piège heredoc `(?:'|")` (R9).
 
-**Scale/Scope**: 5 domaines × (`services.py` + `router.py`) à annoter `[RAG]`
-(~55 fonctions), 5 `models.py` + 5 `schemas.py` en `[MODEL]`/`[SCHEMA]`,
-6 arêtes FK à documenter, échantillon de 3 fichiers à vectoriser.
+**Scale/Scope**: tout le corpus hors modèles/schémas à annoter `[RAG]` —
+5 domaines × (`services.py` + `router.py`), `core/config.py`,
+`core/database.py`, `main.py`, `scripts/seed.py` (~65 fonctions) ; 5
+`models.py` + 5 `schemas.py` en `[MODEL]`/`[SCHEMA]` ; 6 arêtes FK à
+documenter ; échantillon de 4 fichiers à vectoriser.
 
 ## Constitution Check
 
@@ -117,12 +119,13 @@ scripts/                              # Outillage V3, HORS corpus (R8)
 └── rag_probe.py                      # Jalon 13 — chunking + embed + top-k
 
 app/                                  # CORPUS — annoté, jamais modifié en comportement
-├── core/{config,database}.py         # Analysés (graphe) ; non annotés par les scripts
+├── core/{config,database}.py         # ← en-têtes [RAG] (jalon 10 — périmètre étendu)
+├── main.py                           # ← en-têtes [RAG] (jalon 10 — périmètre étendu)
 ├── domains/*/services.py             # ← en-têtes [RAG] (jalon 10)
 ├── domains/*/router.py               # ← en-têtes [RAG] (jalon 10)
 ├── domains/*/models.py               # ← bloc [MODEL] (jalon 11)
 ├── domains/*/schemas.py              # ← bloc [SCHEMA] (jalon 11)
-└── scripts/seed.py                   # Analysé (source d'arêtes CORE) ; non annoté
+└── scripts/seed.py                   # ← en-têtes [RAG] (jalon 10 — périmètre étendu)
 
 TOPOLOGY.yaml                         # Jalon 11 — racine, généré, commité
 CONTRACTS.md                          # Jalon 12 — racine, rédigé, commité
@@ -142,7 +145,11 @@ séparées par `, ` ; liste vide → `none` ; noms de fonctions qualifiés relat
 au corpus (`domaine.module.fonction`, ex. `users.services.create_user` ;
 noyau : `core.database.get_db` ; seed : `scripts.seed.<fn>`).
 
-### En-tête `[RAG]` (Zone 0 — services.py, router.py)
+### En-tête `[RAG]` (Zone 0 — tout le corpus hors models.py/schemas.py : services.py, router.py, core/*.py, main.py, scripts/seed.py)
+
+*(Périmètre étendu par amendement de gouvernance à l'ouverture du jalon 10,
+CLAUDE.md §7 : le cœur critique du corpus — `get_db`, `settings` — ne peut
+pas être sa seule partie non annotée, et Q2 du jalon 13 serait intestable.)*
 
 Ancrage : bloc inséré **immédiatement au-dessus** de la première ligne de la
 définition (le premier décorateur s'il y en a, sinon `def`/`async def`),
@@ -230,7 +237,9 @@ horodatage, UTF-8, LF, newline final unique.
    `Depends(f)` (R2.1) ; `reads`/`mutates` par motifs SQLAlchemy (R2).
 4. Calcul `weight`/`tier` (R1) sur le graphe complet.
 5. Insertion des blocs `[RAG]` (format ci-dessus) sur toutes les fonctions
-   des `services.py` et `router.py` des 5 domaines — remplacement délimité.
+   du corpus hors `models.py`/`schemas.py` — les `services.py` et `router.py`
+   des 5 domaines, `core/config.py`, `core/database.py`, `main.py`,
+   `scripts/seed.py` — remplacement délimité.
 6. Makefile : cible `rag-annotate` (partielle : ce script) + `rag-check`.
 7. Tests unitaires : résolution d'alias, règle `Depends`, weight/tier sur un
    mini-corpus fixture, idempotence (double exécution → arbre identique).
@@ -269,9 +278,10 @@ verte ; commit de gate.
 ### Jalon 13 — Test RAG précoce (`scripts/rag_probe.py`)
 
 1. Échantillon : `app/domains/users/services.py`,
-   `app/domains/organizations/services.py`, `app/core/database.py` (FR-015 —
-   le troisième est volontairement **non annoté** par les scripts : le
-   chunking doit tenir sur ses seuls marqueurs de base, edge case de la spec).
+   `app/domains/organizations/services.py`, `app/core/database.py` (FR-015 ;
+   depuis l'extension du périmètre `[RAG]`, l'échantillon est intégralement
+   annoté — la robustesse du chunker aux fichiers sans en-têtes par fonction
+   reste exigée pour `models.py`/`schemas.py`, edge case de la spec).
 2. Chunking par marqueurs : un chunk = un bloc `[RAG]` + sa fonction
    (délimitation par les ancrages du format) ; boilerplate d'imports exclu
    via `[CODE_START]` (FR-016).

@@ -14,7 +14,9 @@
 
 Le mainteneur du corpus (humain ou pipeline) peut, d'une seule commande,
 faire analyser l'intégralité du code applicatif et insérer sur chaque
-fonction des services et des routeurs un en-tête `[RAG]` machine-readable :
+fonction du corpus hors modèles et schémas — services, routeurs, noyau
+(`core/`), assemblage (`main`) et peuplement (`seed`) — un en-tête `[RAG]`
+machine-readable :
 signature, poids dans le graphe d'appels, niveau (`tier`), fonctions
 appelées et appelantes, tables lues et mutées. Ces en-têtes ne sont
 **jamais** écrits à la main — ils sont dérivés du code réel, donc toujours
@@ -25,12 +27,13 @@ topologie exacte, aucun découpage sémantique fiable. C'est aussi le jalon
 qui fige la sémantique `weight`/`tier` pour tout le reste du projet.
 
 **Independent Test**: Exécuter la génération sur le code de la phase 2 —
-chaque fonction de chaque `services.py` et `router.py` des cinq domaines
-porte un en-tête complet, et aucun import du corpus n'est resté non résolu.
+chaque fonction de chaque `services.py` et `router.py` des cinq domaines,
+de `app/core/*.py`, de `app/main.py` et de `app/scripts/seed.py` porte un
+en-tête complet, et aucun import du corpus n'est resté non résolu.
 
 **Acceptance Scenarios**:
 
-1. **Given** le code applicatif de la phase 2 sans en-têtes, **When** on lance la génération de topologie, **Then** toutes les fonctions des services et routeurs des cinq domaines portent un en-tête `[RAG]` complet (signature, weight, tier, calls, called_by, reads, mutates).
+1. **Given** le code applicatif de la phase 2 sans en-têtes, **When** on lance la génération de topologie, **Then** toutes les fonctions du corpus hors `models.py`/`schemas.py` (services et routeurs des cinq domaines, `core/*.py`, `main.py`, `scripts/seed.py`) portent un en-tête `[RAG]` complet (signature, weight, tier, calls, called_by, reads, mutates).
 2. **Given** le graphe d'appels résolu, **When** on inspecte les en-têtes, **Then** `weight` égale le nombre d'appels entrants plus sortants de la fonction dans le graphe, et `tier` respecte la classification figée (LEAF / CORE / CRITICAL_CORE).
 3. **Given** un import ou un alias de module dans le corpus, **When** l'analyse s'exécute, **Then** l'import est résolu vers sa cible réelle — zéro import non résolu, et tout échec de résolution est signalé explicitement, jamais ignoré en silence.
 4. **Given** un code déjà annoté, **When** on relance la génération sans changement du code, **Then** le résultat est strictement identique (aucune accumulation, aucun décalage).
@@ -121,7 +124,7 @@ documenter le constat.
 - Fonction référencée par de multiples domaines (noyau) → classée `CRITICAL_CORE`, jamais diluée dans un niveau inférieur.
 - Les annotations générées ne modifient aucun comportement : la suite de tests, le typage strict et le lint passent à l'identique après annotation — vérifié à chaque gate, pas supposé.
 - Développement des scripts via heredoc bash : le motif d'échappement des guillemets connu pour se corrompre est proscrit au profit de la forme sûre consignée dans la charte (§7).
-- L'échantillon du jalon 13 contient un fichier du noyau (`core/`) non annoté par les scripts des jalons 10–11 (hors services/routeurs/modèles/schémas) → le découpage doit rester correct sur ses marqueurs de base.
+- Fichier du corpus sans en-têtes `[RAG]` par fonction (`models.py`, `schemas.py` — seuls hors périmètre `[RAG]` depuis l'amendement du jalon 10) → le découpage doit rester correct sur ses marqueurs de base ; l'échantillon du jalon 13 est quant à lui intégralement annoté.
 
 ## Requirements *(mandatory)*
 
@@ -141,7 +144,7 @@ documenter le constat.
 - **FR-007**: L'analyse DOIT résoudre la totalité des imports et alias de modules du corpus ; zéro import non résolu, et tout échec de résolution DOIT être signalé explicitement.
 - **FR-008**: L'analyse DOIT construire le graphe d'appels complet du corpus et calculer pour chaque fonction : `weight` = nombre d'appels entrants + nombre d'appels sortants dans le graphe résolu.
 - **FR-009**: Chaque fonction DOIT être classée sur une échelle fermée : `LEAF` = aucun appel entrant hors de son routeur ; `CORE` = référencée par au moins un service ou le peuplement ; `CRITICAL_CORE` = les points d'accès du noyau (`get_db`, `settings`) et toute fonction référencée par trois domaines ou plus.
-- **FR-010**: Chaque fonction de chaque `services.py` et `router.py` des cinq domaines DOIT recevoir un en-tête `[RAG]` complet : signature, weight, tier, calls, called_by, reads (tables lues), mutates (tables mutées).
+- **FR-010**: Chaque fonction du corpus hors `models.py`/`schemas.py` — les `services.py` et `router.py` des cinq domaines, `app/core/*.py`, `app/main.py` et `app/scripts/seed.py` — DOIT recevoir un en-tête `[RAG]` complet : signature, weight, tier, calls, called_by, reads (tables lues), mutates (tables mutées). *(Périmètre étendu par amendement de gouvernance à l'ouverture du jalon 10 — CLAUDE.md §7 : un corpus dont le cœur critique serait la seule partie non annotée contredirait sa propre géométrie.)*
 
 **Structure (jalon 11)**
 
@@ -177,7 +180,7 @@ documenter le constat.
 
 ### Measurable Outcomes
 
-- **SC-001**: 100 % des fonctions des `services.py` et `router.py` des cinq domaines portent un en-tête `[RAG]` complet et exact ; zéro import non résolu dans l'analyse.
+- **SC-001**: 100 % des fonctions du corpus hors `models.py`/`schemas.py` (services et routeurs des cinq domaines, `core/*.py`, `main.py`, `scripts/seed.py`) portent un en-tête `[RAG]` complet et exact ; zéro import non résolu dans l'analyse.
 - **SC-002**: Deux exécutions successives de l'annotation complète sur un code inchangé produisent un diff strictement vide ; `TOPOLOGY.yaml` est identique entre deux générations.
 - **SC-003**: La suite de tests, le typage strict et le lint passent au vert après annotation, à chacun des quatre gates de la phase.
 - **SC-004**: Les six arêtes FK cross-domaines sont documentées dans `CONTRACTS.md` sans contradiction avec le modèle de données de la phase 2.

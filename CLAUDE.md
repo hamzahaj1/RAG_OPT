@@ -272,7 +272,13 @@ par analyse AST.
 
 **`generate_topology_headers.py`**
 Analyse l'AST, résout les imports et alias de module, calcule `weight` et `tier`,
-insère les en-têtes `[RAG]` dans `services.py` et `router.py`.
+insère les en-têtes `[RAG]` dans `services.py` et `router.py` de chaque domaine,
+ainsi que `app/core/*.py`, `app/main.py` et `app/scripts/seed.py` — **toute
+fonction du corpus `app/` hors `models.py`/`schemas.py` porte un en-tête
+`[RAG]`** (périmètre étendu en ouverture du jalon 10). Raison : la sémantique
+des tiers désigne `get_db` et `settings` comme `CRITICAL_CORE` ; un corpus
+dont le cœur critique serait la seule partie non annotée contredirait sa
+propre géométrie (et la question Q2 du jalon 13 serait intestable).
 
 **`generate_structural_metadata.py`**
 Insère `[MODEL]` sur `models.py`, `[SCHEMA]` sur `schemas.py`, produit

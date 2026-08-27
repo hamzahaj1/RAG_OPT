@@ -54,8 +54,11 @@ résolu, en-têtes complets sur les 5 domaines, double exécution = diff vide.
       format normatif du plan (§ Formats — champs en ordre fixe, listes
       triées ASCII, `none` si vide) ; ancrage immédiatement au-dessus du
       premier décorateur ou du `def` ; **remplacement délimité** du bloc
-      existant (R3) ; cibles = les 10 fichiers `services.py` + `router.py`
-      des cinq domaines, eux seuls.
+      existant (R3) ; cibles = **toutes les fonctions du corpus hors
+      `models.py`/`schemas.py`** : les 10 fichiers `services.py` +
+      `router.py` des cinq domaines, `app/core/config.py`,
+      `app/core/database.py`, `app/main.py` et `app/scripts/seed.py`
+      (périmètre étendu par amendement de gouvernance — CLAUDE.md §7).
 - [ ] **T059** [P] [J10] Tests du générateur dans
       `tests/unit/test_topology_headers.py` : format et ancrage du bloc,
       idempotence (double exécution sur fixture → contenu strictement
@@ -66,11 +69,13 @@ résolu, en-têtes complets sur les 5 domaines, double exécution = diff vide.
       `git diff --exit-code -- app/ TOPOLOGY.yaml` (R7, modèle du contrôle
       de dérive Alembic) ; entrées `help` correspondantes.
 - [ ] **T061** [J10] Exécution réelle sur `app/` : zéro import non résolu ;
-      en-tête complet sur 100 % des fonctions des services et routeurs des
-      5 domaines (SC-001) ; contrôles de véracité ponctuels contre le code —
-      `get_db` classé `CRITICAL_CORE` avec `called_by` multi-domaines via
-      `Depends`, `delete_user` avec `reads` organizations/comments et ses
-      appelants réels.
+      en-tête complet sur 100 % des fonctions du corpus hors
+      `models.py`/`schemas.py` — services et routeurs des 5 domaines,
+      `core/config.py`, `core/database.py`, `main.py`, `scripts/seed.py`
+      (SC-001, périmètre étendu) ; contrôles de véracité ponctuels contre le
+      code — **`get_db` est `CRITICAL_CORE` avec `called_by` couvrant les
+      5 domaines** (via `Depends`), `delete_user` avec `reads`
+      organizations/comments et ses appelants réels.
 - [ ] **T062** [J10] **GATE 10 — complet, APRÈS annotation** :
       `make rag-check` vert (idempotence prouvée) ; pytest intégral (les
       117 tests de la phase 2 + T057/T059) ; MyPy `--strict` ; Ruff
@@ -167,11 +172,10 @@ constater les attendus dans le top-k, documenter le constat.
 
 **Échantillon figé** : `app/domains/users/services.py`,
 `app/domains/organizations/services.py`, `app/core/database.py` (minimum
-FR-015 — le troisième volontairement non annoté par les scripts : le
-chunking doit tenir sur ses marqueurs de base), **plus**
-`app/domains/users/router.py` — 4ᵉ fichier admis par FR-015 (« au moins
-trois »), requis pour que Q2 puisse remonter un chunk d'endpoint montrant
-`Depends(get_db)`.
+FR-015 — intégralement annoté depuis l'extension du périmètre `[RAG]`),
+**plus** `app/domains/users/router.py` — 4ᵉ fichier admis par FR-015
+(« au moins trois »), requis pour que Q2 puisse remonter un chunk
+d'endpoint montrant `Depends(get_db)`.
 
 **Questions de contrôle figées** :
 
@@ -191,9 +195,11 @@ trois »), requis pour que Q2 puisse remonter un chunk d'endpoint montrant
 - [ ] **T076** [J13] **Chunker** dans `scripts/rag_probe.py` (Standard V3,
       hors corpus) : découpage par marqueurs — un chunk = un bloc `[RAG]` +
       sa fonction (ancrages du format normatif) ; boilerplate d'imports
-      exclu via `[CODE_START]` (FR-016) ; fichier non annoté
-      (`core/database.py`) découpé correctement sur ses seuls marqueurs de
-      base (edge case de la spec) ; échantillon figé ci-dessus.
+      exclu via `[CODE_START]` (FR-016) ; robustesse aux fichiers sans
+      en-têtes `[RAG]` par fonction maintenue (`models.py`/`schemas.py`,
+      edge case de la spec — `core/database.py` n'en est plus le cas
+      d'usage, l'échantillon étant intégralement annoté) ; échantillon figé
+      ci-dessus.
 - [ ] **T077** [P] [J13] Tests du chunker seul (pur, sans embedding) dans
       `tests/unit/test_rag_probe.py` : bornes des chunks, exclusion du
       boilerplate, un chunk par fonction annotée, cas du fichier non annoté.
