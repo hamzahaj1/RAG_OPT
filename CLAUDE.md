@@ -114,6 +114,18 @@ Décisions locales actées, à ne pas remettre en cause sans nouvelle décision 
 - **Génération de migrations** : toujours via `make db-revision m="message"`
   (autogenerate + `ruff check --fix` + `ruff format` sur `alembic/versions/`),
   jamais `alembic revision` à la main.
+- **Git** : initialisé **rétroactivement en clôture de phase 2** (constat :
+  jamais init depuis le jalon 0) — la phase 2 entre dans l'historique comme
+  **instantané unique** (`b60e2cf` sur `main`) taggé `phase-2-complete`,
+  sans historique par jalon. Identité locale au dépôt ; `.env` et caches
+  exclus par le `.gitignore` racine.
+- **Règle désormais en vigueur — un commit par gate validé (minimum
+  obligatoire)**, sur la branche de la phase en cours
+  (`002-phase3-metadata` pour la phase 3). Le commit fait partie du
+  gate : **un jalon n'est clos qu'une fois commité**. Les **amendements
+  de gouvernance** (CLAUDE.md, constitution, specs) sont **commités dès
+  leur rédaction**, en commits de documentation distincts des commits de
+  gate.
 
 ---
 
