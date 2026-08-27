@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: docker.io/library/postgres:16-alpine
+    container_name: alpha_scope_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-alpha_scope_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-alpha_scope_dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: docker.io/library/adminer:latest
+    container_name: alpha_scope_adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
