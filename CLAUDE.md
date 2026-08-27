@@ -164,9 +164,11 @@ alpha_scope_rag/
 │   │       └── router.py          # Endpoints        — annoté [RAG]
 │   └── scripts/
 │       └── seed.py
-├── scripts/
-│   ├── generate_topology_headers.py
-│   └── generate_structural_metadata.py
+├── scripts/                           # Outillage V3 intégral, HORS corpus RAG
+│   ├── corpus_analysis.py             # Module d'analyse AST partagé (graphe, weight/tier)
+│   ├── generate_topology_headers.py   # Consommateur — en-têtes [RAG]
+│   ├── generate_structural_metadata.py# Consommateur — [MODEL]/[SCHEMA], TOPOLOGY.yaml
+│   └── rag_probe.py                   # Jalon 13 — chunking + vectorisation de l'échantillon
 ├── frontend/
 └── tests/
     ├── unit/
