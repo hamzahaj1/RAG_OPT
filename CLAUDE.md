@@ -118,6 +118,11 @@ Décisions locales actées, à ne pas remettre en cause sans nouvelle décision 
   `specs/`, `tests/` et `alembic/` sont **hors corpus** ; les scripts de
   `scripts/` suivent néanmoins le Standard Alpha-Scope V3 (§6 : « tous les
   fichiers »). Acté à l'ouverture de la phase 3.
+  **Amendement (jalon 12)** : `CONTRACTS.md` (racine) **entre dans le
+  corpus indexable** à partir du jalon 18 — c'est la documentation de
+  référence de `app/`, et un chunk par arête FK est un signal
+  cross-domaine précieux pour le retrieval. Le corpus indexable devient :
+  `app/` + `CONTRACTS.md` (une section d'arête = un chunk).
 - **Git** : initialisé **rétroactivement en clôture de phase 2** (constat :
   jamais init depuis le jalon 0) — la phase 2 entre dans l'historique comme
   **instantané unique** (`b60e2cf` sur `main`) taggé `phase-2-complete`,
