@@ -135,7 +135,7 @@ dérivées des sources de vérité, sans réinvention.
 **Independent Test** : les 6 arêtes du graphe (CLAUDE.md §3) documentées,
 chaque affirmation concordant avec le modèle de données de la phase 2.
 
-- [ ] **T071** [J12] Rédiger `CONTRACTS.md` (racine) : pour chacune des 6
+- [x] **T071** [J12] Rédiger `CONTRACTS.md` (racine) : pour chacune des 6
       arêtes — `organizations.owner_id → users.id`,
       `projects.organization_id → organizations.id`,
       `tasks.project_id → projects.id`, `tasks.assignee_id → users.id`,
@@ -147,14 +147,14 @@ chaque affirmation concordant avec le modèle de données de la phase 2.
       `1d70e9de6246`, `677e300dd994`, `443e75f588d9`, `3b55d9e3f2bf`,
       docstrings des services, `specs/001-phase2-domains/data-model.md`
       (FR-014 — aucune règle réinventée).
-- [ ] **T072** [J12] Confrontation systématique, arête par arête, de
+- [x] **T072** [J12] Confrontation systématique, arête par arête, de
       `CONTRACTS.md` contre `data-model.md` et les migrations : zéro
       contradiction (SC-004) ; écarts éventuels corrigés côté
       `CONTRACTS.md`, jamais côté sources.
-- [ ] **T073** [J12] **GATE 12** : `make rag-check` vert (aucune dérive
+- [x] **T073** [J12] **GATE 12** : `make rag-check` vert (aucune dérive
       d'annotation) ; pytest intégral ; MyPy `--strict` ; Ruff `check` +
       `format --check`.
-- [ ] **T074** [J12] **COMMIT de gate du jalon 12** (inclut `CONTRACTS.md`).
+- [x] **T074** [J12] **COMMIT de gate du jalon 12** (inclut `CONTRACTS.md`).
 
 **Checkpoint** : la documentation de référence des questions cross-domaines
 existe — le jalon 13 peut ouvrir.
