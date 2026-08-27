@@ -44,6 +44,7 @@ db-seed:
 
 rag-annotate:
 	poetry run python -m scripts.generate_topology_headers
+	poetry run python -m scripts.generate_structural_metadata
 	@echo "✓ Annotations RAG régénérées"
 
 rag-check: rag-annotate

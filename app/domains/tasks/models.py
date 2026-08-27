@@ -1,4 +1,11 @@
 # [FILE] — app/domains/tasks/models.py
+# [MODEL]
+# entity: Task
+# table: tasks
+# columns: assignee_id, created_at, description, id, priority, project_id, status, title, updated_at
+# fks: assignee_id -> users.id [SET NULL], project_id -> projects.id [CASCADE]
+# referenced_by: comments.task_id -> CASCADE
+# [/MODEL]
 """Modèle SQLAlchemy du domaine tasks.
 
 Premier domaine à double référence inter-domaines : ``project_id``

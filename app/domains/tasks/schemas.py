@@ -1,4 +1,9 @@
 # [FILE] — app/domains/tasks/schemas.py
+# [SCHEMA]
+# domain: tasks
+# schemas: TaskBase(BaseModel), TaskCreate(TaskBase), TaskRead(TaskBase), TaskUpdate(BaseModel)
+# entity: Task
+# [/SCHEMA]
 """Schémas Pydantic du domaine tasks.
 
 Données pures, sans logique ni méthode : quatre classes (Base, Create,

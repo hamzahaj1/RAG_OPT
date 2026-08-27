@@ -1,4 +1,12 @@
 # [FILE] — app/domains/users/models.py
+# [MODEL]
+# entity: User
+# table: users
+# columns: created_at, email, full_name, hashed_password, id, role, updated_at
+# fks: none
+# referenced_by: comments.author_id -> RESTRICT, organizations.owner_id -> RESTRICT,
+#   tasks.assignee_id -> SET NULL
+# [/MODEL]
 """Modèle SQLAlchemy du domaine users.
 
 Socle relationnel de la plateforme : les organisations (propriétaire),

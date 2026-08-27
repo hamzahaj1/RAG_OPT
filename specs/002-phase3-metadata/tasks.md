@@ -96,9 +96,9 @@ résolu, en-têtes complets sur les 5 domaines, double exécution = diff vide.
 **Independent Test** : deux générations successives → `TOPOLOGY.yaml` existe,
 décrit le graphe complet, fichiers identiques octet pour octet.
 
-- [ ] **T064** [J11] Dépendance dev : `pyyaml` au groupe dev de Poetry (R4) —
+- [x] **T064** [J11] Dépendance dev : `pyyaml` au groupe dev de Poetry (R4) —
       `app/` n'acquiert aucune dépendance.
-- [ ] **T065** [J11] Générateur `scripts/generate_structural_metadata.py`
+- [x] **T065** [J11] Générateur `scripts/generate_structural_metadata.py`
       (consommateur de `corpus_analysis`) : blocs `# [MODEL]` … `# [/MODEL]`
       sur les 5 `models.py` (entity, table, columns triées, fks,
       `referenced_by` avec politiques `ondelete` — le signal RAG des
@@ -108,19 +108,19 @@ décrit le graphe complet, fichiers identiques octet pour octet.
       fonctions sans en-tête (`core/`, `scripts.seed`, `main`) —
       sérialisation R4 : `safe_dump(sort_keys=True)`, listes pré-triées,
       aucun horodatage, UTF-8, LF, newline final unique.
-- [ ] **T066** [P] [J11] Tests dans `tests/unit/test_structural_metadata.py` :
+- [x] **T066** [P] [J11] Tests dans `tests/unit/test_structural_metadata.py` :
       format et ancrage des blocs sur fixture, idempotence du remplacement,
       double génération de `TOPOLOGY.yaml` → identité octet pour octet.
-- [ ] **T067** [J11] Makefile : `rag-annotate` prend sa **forme finale** —
+- [x] **T067** [J11] Makefile : `rag-annotate` prend sa **forme finale** —
       topologie **puis** structure (l'ordre importe : la structure sérialise
       le graphe résolu par la topologie, R7).
-- [ ] **T068** [J11] Exécution réelle : les 10 blocs posés sur les 5
+- [x] **T068** [J11] Exécution réelle : les 10 blocs posés sur les 5
       domaines ; `TOPOLOGY.yaml` produit à la racine ; double génération
       vérifiée identique (`cmp`) (SC-002).
-- [ ] **T069** [J11] **GATE 11 — complet, APRÈS annotation** :
+- [x] **T069** [J11] **GATE 11 — complet, APRÈS annotation** :
       `make rag-check` vert ; pytest intégral ; MyPy `--strict` ; Ruff
       `check` + `format --check`.
-- [ ] **T070** [J11] **COMMIT de gate du jalon 11** (inclut `TOPOLOGY.yaml`).
+- [x] **T070** [J11] **COMMIT de gate du jalon 11** (inclut `TOPOLOGY.yaml`).
 
 **Checkpoint** : couverture d'annotation complète des 4 fichiers de chaque
 domaine + index structurel global — le jalon 12 peut ouvrir.

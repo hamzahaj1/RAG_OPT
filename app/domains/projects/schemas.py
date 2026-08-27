@@ -1,4 +1,10 @@
 # [FILE] — app/domains/projects/schemas.py
+# [SCHEMA]
+# domain: projects
+# schemas: ProjectBase(BaseModel), ProjectCreate(ProjectBase), ProjectRead(ProjectBase),
+#   ProjectUpdate(BaseModel)
+# entity: Project
+# [/SCHEMA]
 """Schémas Pydantic du domaine projects.
 
 Données pures, sans logique ni méthode : quatre classes (Base, Create,

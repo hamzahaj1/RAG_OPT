@@ -72,6 +72,26 @@ class CorpusGraph:
 
 
 @dataclass(frozen=True)
+class ForeignKeyInfo:
+    """Arête FK déclarée par un modèle — colonne, cible et politique ``ondelete``."""
+
+    column: str
+    policy: str
+    target: str
+
+
+@dataclass(frozen=True)
+class ModelInfo:
+    """Structure d'un modèle SQLAlchemy du corpus — matière du bloc [MODEL]."""
+
+    columns: tuple[str, ...]
+    entity: str
+    fks: tuple[ForeignKeyInfo, ...]
+    module: str
+    table: str
+
+
+@dataclass(frozen=True)
 class _ModuleContext:
     """Contexte de résolution d'un module — alias, symboles, univers corpus."""
 
@@ -181,6 +201,69 @@ def _collect_called_name_ids(func: ast.FunctionDef | ast.AsyncFunctionDef) -> fr
         for node in _walk_runtime(func)
         if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
     )
+
+
+def _collect_class_columns(cls: ast.ClassDef) -> list[str]:
+    """Colonnes d'un modèle : attributs annotés ``Mapped[...]``, triés ASCII.
+
+    Invariant du corpus : toute colonne est déclarée en ``Mapped`` — la
+    liste dérive de la structure, jamais d'une énumération manuelle.
+    """
+    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    columns: list[str]
+    statement: ast.stmt
+    # ─────────────────────────────────────────
+
+    # [STEP 1] Relever chaque attribut Mapped → colonnes triées de la table
+    columns = []
+    for statement in cls.body:
+        if isinstance(statement, ast.AnnAssign) and isinstance(statement.target, ast.Name):
+            if any(
+                isinstance(node, ast.Name) and node.id == "Mapped"
+                for node in ast.walk(statement.annotation)
+            ):
+                columns.append(statement.target.id)
+    return sorted(columns)
+
+
+def _collect_class_fks(cls: ast.ClassDef) -> list[ForeignKeyInfo]:
+    """FK d'un modèle : appels ``ForeignKey`` des colonnes, politique incluse.
+
+    Règles : la cible est le premier argument constant (``table.colonne``) ;
+    la politique vient du mot-clé ``ondelete`` — ``NO ACTION`` si absent
+    (défaut SQL), jamais une valeur inventée.
+    """
+    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    fks: list[ForeignKeyInfo]
+    node: ast.AST
+    policy: str
+    statement: ast.stmt
+    # ─────────────────────────────────────────
+
+    # [STEP 1] Chercher ForeignKey dans chaque colonne → arête complète par appel
+    fks = []
+    for statement in cls.body:
+        if not (isinstance(statement, ast.AnnAssign) and isinstance(statement.target, ast.Name)):
+            continue
+        for node in ast.walk(statement):
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id == "ForeignKey"
+                and node.args
+                and isinstance(node.args[0], ast.Constant)
+                and isinstance(node.args[0].value, str)
+            ):
+                policy = "NO ACTION"
+                for keyword in node.keywords:
+                    if keyword.arg == "ondelete" and isinstance(keyword.value, ast.Constant):
+                        policy = str(keyword.value.value)
+                fks.append(
+                    ForeignKeyInfo(
+                        column=statement.target.id, policy=policy, target=node.args[0].value
+                    )
+                )
+    return sorted(fks, key=lambda fk: fk.column)
 
 
 def _collect_local_model_types(
@@ -628,6 +711,72 @@ def calls_of(graph: CorpusGraph, qualified: str) -> list[str]:
     """Fonctions appelées, triées, par une fonction du graphe résolu."""
     # [STEP 1] Filtrer les arêtes sortantes → liste triée déterministe
     return sorted(target for source, target in graph.edges if source == qualified)
+
+
+def collect_models(app_dir: Path) -> tuple[ModelInfo, ...]:
+    """Structures des modèles du corpus, triées par (module, entité).
+
+    Règles métier :
+    - un modèle = une classe portant ``__tablename__`` (même critère que
+      le registre du graphe — une seule définition de la notion) ;
+    - colonnes et FK dérivent de l'AST : le bloc [MODEL] n'énonce que ce
+      que le code déclare (FR-001).
+    """
+    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    models: list[ModelInfo]
+    statement: ast.stmt
+    tables: dict[str, str]
+    trees: dict[str, ast.Module]
+    # ─────────────────────────────────────────
+
+    # [STEP 1] Parser le corpus et croiser le registre → une entrée par modèle
+    trees, _ = _parse_corpus(app_dir)
+    tables = _collect_model_tables(trees)
+    models = []
+    for module, tree in sorted(trees.items()):
+        for statement in tree.body:
+            if isinstance(statement, ast.ClassDef) and statement.name in tables:
+                models.append(
+                    ModelInfo(
+                        columns=tuple(_collect_class_columns(statement)),
+                        entity=statement.name,
+                        fks=tuple(_collect_class_fks(statement)),
+                        module=module,
+                        table=tables[statement.name],
+                    )
+                )
+    return tuple(sorted(models, key=lambda model: (model.module, model.entity)))
+
+
+def collect_schemas(app_dir: Path) -> dict[str, tuple[str, ...]]:
+    """Classes de schémas par module ``*.schemas`` : ``Nom(BaseDirecte)`` triés.
+
+    Règle : la base rendue est la première base déclarée (héritage direct),
+    dérivée de l'AST — le bloc [SCHEMA] reflète la hiérarchie réelle.
+    """
+    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    entries: list[str]
+    schemas: dict[str, tuple[str, ...]]
+    statement: ast.stmt
+    trees: dict[str, ast.Module]
+    # ─────────────────────────────────────────
+
+    # [STEP 1] Balayer les modules de schémas → classes rendues avec leur base
+    trees, _ = _parse_corpus(app_dir)
+    schemas = {}
+    for module, tree in sorted(trees.items()):
+        if not module.endswith(".schemas"):
+            continue
+        entries = []
+        for statement in tree.body:
+            if isinstance(statement, ast.ClassDef):
+                entries.append(
+                    f"{statement.name}({ast.unparse(statement.bases[0])})"
+                    if statement.bases
+                    else statement.name
+                )
+        schemas[module] = tuple(sorted(entries))
+    return schemas
 
 
 def tier_of(graph: CorpusGraph, qualified: str) -> str:

@@ -1,4 +1,9 @@
 # [FILE] — app/domains/users/schemas.py
+# [SCHEMA]
+# domain: users
+# schemas: UserBase(BaseModel), UserCreate(UserBase), UserRead(UserBase), UserUpdate(BaseModel)
+# entity: User
+# [/SCHEMA]
 """Schémas Pydantic du domaine users.
 
 Données pures, sans logique ni méthode : quatre classes (Base, Create,

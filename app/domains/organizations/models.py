@@ -1,4 +1,11 @@
 # [FILE] — app/domains/organizations/models.py
+# [MODEL]
+# entity: Organization
+# table: organizations
+# columns: created_at, id, name, owner_id, updated_at
+# fks: owner_id -> users.id [RESTRICT]
+# referenced_by: projects.organization_id -> RESTRICT
+# [/MODEL]
 """Modèle SQLAlchemy du domaine organizations.
 
 Première relation inter-domaines du projet : ``owner_id`` référence

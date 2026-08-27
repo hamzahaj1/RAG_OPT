@@ -1,4 +1,10 @@
 # [FILE] — app/domains/comments/schemas.py
+# [SCHEMA]
+# domain: comments
+# schemas: CommentBase(BaseModel), CommentCreate(CommentBase), CommentRead(CommentBase),
+#   CommentUpdate(BaseModel)
+# entity: Comment
+# [/SCHEMA]
 """Schémas Pydantic du domaine comments.
 
 Données pures, sans logique ni méthode : quatre classes (Base, Create,

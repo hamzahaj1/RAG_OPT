@@ -1,4 +1,11 @@
 # [FILE] — app/domains/projects/models.py
+# [MODEL]
+# entity: Project
+# table: projects
+# columns: created_at, description, id, name, organization_id, updated_at
+# fks: organization_id -> organizations.id [RESTRICT]
+# referenced_by: tasks.project_id -> CASCADE
+# [/MODEL]
 """Modèle SQLAlchemy du domaine projects.
 
 Domaine central de la plateforme : ``organization_id`` référence

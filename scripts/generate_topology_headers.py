@@ -58,55 +58,17 @@ def _format_block(
 
     # [STEP 1] Assembler champs et marqueurs → bloc prêt à insérer
     lines = [HEADER_OPEN]
-    lines.extend(_format_field("signature", node.signature))
-    lines.extend(_format_field("weight", str(corpus_analysis.weight_of(graph, node.qualified))))
-    lines.extend(_format_field("tier", corpus_analysis.tier_of(graph, node.qualified)))
-    lines.extend(_format_list_field("calls", corpus_analysis.calls_of(graph, node.qualified)))
+    lines.extend(format_field("signature", node.signature))
+    lines.extend(format_field("weight", str(corpus_analysis.weight_of(graph, node.qualified))))
+    lines.extend(format_field("tier", corpus_analysis.tier_of(graph, node.qualified)))
+    lines.extend(format_list_field("calls", corpus_analysis.calls_of(graph, node.qualified)))
     lines.extend(
-        _format_list_field("called_by", corpus_analysis.called_by_of(graph, node.qualified))
+        format_list_field("called_by", corpus_analysis.called_by_of(graph, node.qualified))
     )
-    lines.extend(_format_list_field("reads", sorted(graph.reads.get(node.qualified, set()))))
-    lines.extend(_format_list_field("mutates", sorted(graph.mutates.get(node.qualified, set()))))
+    lines.extend(format_list_field("reads", sorted(graph.reads.get(node.qualified, set()))))
+    lines.extend(format_list_field("mutates", sorted(graph.mutates.get(node.qualified, set()))))
     lines.append(HEADER_CLOSE)
     return lines
-
-
-def _format_field(label: str, value: str) -> list[str]:
-    """Rend un champ ``# label: valeur`` replié sous la borne de colonnes.
-
-    Le repli coupe sur les séparateurs ``, `` ; les lignes de continuation
-    portent le préfixe ``#  `` — le champ reste parsable ligne à ligne.
-    """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
-    current: str
-    lines: list[str]
-    segment: str
-    segments: list[str]
-    # ─────────────────────────────────────────
-
-    # [STEP 1] Retourner tel quel un champ court → cas nominal sans repli
-    current = f"# {label}: {value}"
-    if len(current) <= MAX_LINE_LENGTH:
-        return [current]
-
-    # [STEP 2] Replier sur les virgules → lignes bornées, contenu intact
-    segments = value.split(", ")
-    lines = []
-    current = f"# {label}: {segments[0]}"
-    for segment in segments[1:]:
-        if len(f"{current}, {segment}") <= MAX_LINE_LENGTH:
-            current = f"{current}, {segment}"
-        else:
-            lines.append(f"{current},")
-            current = f"{CONTINUATION_PREFIX} {segment}"
-    lines.append(current)
-    return lines
-
-
-def _format_list_field(label: str, values: list[str]) -> list[str]:
-    """Rend un champ liste — éléments triés joints par ``, ``, ``none`` si vide."""
-    # [STEP 1] Joindre ou marquer l'absence → champ toujours présent
-    return _format_field(label, ", ".join(values) if values else "none")
 
 
 def _module_functions(path: Path) -> list[tuple[str, int]]:
@@ -210,6 +172,46 @@ def annotate_corpus(app_dir: Path) -> list[str]:
             path.write_text(new_text, encoding="utf-8")
             changed.append(path.as_posix())
     return changed
+
+
+def format_field(label: str, value: str) -> list[str]:
+    """Rend un champ ``# label: valeur`` replié sous la borne de colonnes.
+
+    Le repli coupe sur les séparateurs ``, `` ; les lignes de continuation
+    portent le préfixe ``#  `` — le champ reste parsable ligne à ligne.
+    API partagée : le générateur structurel (jalon 11) consomme le même
+    repli pour les blocs [MODEL]/[SCHEMA] — une seule définition du format.
+    """
+    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    current: str
+    lines: list[str]
+    segment: str
+    segments: list[str]
+    # ─────────────────────────────────────────
+
+    # [STEP 1] Retourner tel quel un champ court → cas nominal sans repli
+    current = f"# {label}: {value}"
+    if len(current) <= MAX_LINE_LENGTH:
+        return [current]
+
+    # [STEP 2] Replier sur les virgules → lignes bornées, contenu intact
+    segments = value.split(", ")
+    lines = []
+    current = f"# {label}: {segments[0]}"
+    for segment in segments[1:]:
+        if len(f"{current}, {segment}") <= MAX_LINE_LENGTH:
+            current = f"{current}, {segment}"
+        else:
+            lines.append(f"{current},")
+            current = f"{CONTINUATION_PREFIX} {segment}"
+    lines.append(current)
+    return lines
+
+
+def format_list_field(label: str, values: list[str]) -> list[str]:
+    """Rend un champ liste — éléments triés joints par ``, ``, ``none`` si vide."""
+    # [STEP 1] Joindre ou marquer l'absence → champ toujours présent
+    return format_field(label, ", ".join(values) if values else "none")
 
 
 def main() -> None:

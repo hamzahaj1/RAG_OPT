@@ -23,6 +23,8 @@ mypy = "^1.18.0"
 pytest = "^8.4.0"
 pytest-asyncio = "^1.2.0"
 ruff = "^0.14.0"
+pyyaml = "^6.0.3"
+types-pyyaml = "^6.0.12.20260815"
 
 [tool.mypy]
 python_version = "3.11"

@@ -1,4 +1,10 @@
 # [FILE] — app/domains/organizations/schemas.py
+# [SCHEMA]
+# domain: organizations
+# schemas: OrganizationBase(BaseModel), OrganizationCreate(OrganizationBase),
+#   OrganizationRead(OrganizationBase), OrganizationUpdate(BaseModel)
+# entity: Organization
+# [/SCHEMA]
 """Schémas Pydantic du domaine organizations.
 
 Données pures, sans logique ni méthode : quatre classes (Base, Create,

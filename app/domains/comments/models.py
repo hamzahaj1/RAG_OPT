@@ -1,4 +1,11 @@
 # [FILE] — app/domains/comments/models.py
+# [MODEL]
+# entity: Comment
+# table: comments
+# columns: author_id, content, created_at, id, task_id, updated_at
+# fks: author_id -> users.id [RESTRICT], task_id -> tasks.id [CASCADE]
+# referenced_by: none
+# [/MODEL]
 """Modèle SQLAlchemy du domaine comments.
 
 Dernier maillon du graphe relationnel, relation la plus imbriquée :

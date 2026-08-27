@@ -79,13 +79,52 @@ async def run(db):
     return await users_services.create_user(db, None)
 '''
 
-FIXTURE_USER_MODELS: str = '''"""Modèle users de fixture."""
+FIXTURE_COMMENT_MODELS: str = '''# [FILE] — app/domains/comments/models.py
+"""Modèle comments de fixture — double FK, politiques opposées."""
+
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column
+
+
+class Comment:
+    """Modèle factice : auteur bloquant, tâche contenante."""
+
+    __tablename__ = "comments"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    author_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    task_id: Mapped[int] = mapped_column(ForeignKey("tasks.id", ondelete="CASCADE"))
+'''
+
+FIXTURE_TASK_MODELS: str = '''# [FILE] — app/domains/tasks/models.py
+"""Modèle tasks de fixture — assignation détachable."""
+
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column
+
+
+class Task:
+    """Modèle factice : l'assigné se détache en SET NULL."""
+
+    __tablename__ = "tasks"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    assignee_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+'''
+
+FIXTURE_USER_MODELS: str = '''# [FILE] — app/domains/users/models.py
+"""Modèle users de fixture."""
+
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class User:
     """Modèle factice portant sa table."""
 
     __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(unique=True)
 '''
 
 FIXTURE_USER_ROUTER: str = '''"""Routeur users de fixture."""
@@ -104,10 +143,13 @@ async def create_user(data, db=Depends(get_db)):
     return await services.create_user(db, data)
 '''
 
-FIXTURE_USER_SCHEMAS: str = '''"""Schémas users de fixture."""
+FIXTURE_USER_SCHEMAS: str = '''# [FILE] — app/domains/users/schemas.py
+"""Schémas users de fixture."""
+
+from pydantic import BaseModel
 
 
-class UserCreate:
+class UserCreate(BaseModel):
     """Schéma factice."""
 '''
 
@@ -155,10 +197,14 @@ def build_fixture_corpus(root: Path) -> Path:
         "core/config.py": FIXTURE_CONFIG,
         "core/database.py": FIXTURE_DATABASE,
         "domains/__init__.py": "",
+        "domains/comments/__init__.py": "",
+        "domains/comments/models.py": FIXTURE_COMMENT_MODELS,
         "domains/organizations/__init__.py": "",
         "domains/organizations/services.py": FIXTURE_ORG_SERVICES,
         "domains/projects/__init__.py": "",
         "domains/projects/services.py": FIXTURE_PROJECT_SERVICES,
+        "domains/tasks/__init__.py": "",
+        "domains/tasks/models.py": FIXTURE_TASK_MODELS,
         "domains/users/__init__.py": "",
         "domains/users/models.py": FIXTURE_USER_MODELS,
         "domains/users/router.py": FIXTURE_USER_ROUTER,
