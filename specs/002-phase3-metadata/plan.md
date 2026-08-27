@@ -172,7 +172,18 @@ async def create_user(db: AsyncSession, data: UserCreate) -> User:
 Champs — ordre fixe : `signature` (nom + paramètres typés + retour, dérivés
 de l'AST), `weight` (entier, R1), `tier` (`LEAF` | `CORE` | `CRITICAL_CORE`),
 `calls` / `called_by` (noms qualifiés triés), `reads` / `mutates` (noms de
-tables triés).
+tables triés ; `reads` inclut l'entité `settings` — charte §6 : « tables et
+entités lues »).
+
+**Repli des lignes longues (normatif)** : tout champ dont la ligne dépasse
+100 colonnes (borne Ruff du projet) est replié sur les séparateurs `, ` ;
+les lignes de continuation portent le préfixe `#   ` et la ligne coupée se
+termine par sa virgule. Exemple réel (`get_db`, 25 appelants) :
+
+```python
+# called_by: comments.router.create_comment, comments.router.delete_comment,
+#   comments.router.get_comment, comments.router.list_comments, ...
+```
 
 ### Bloc `[MODEL]` (models.py — niveau fichier)
 
