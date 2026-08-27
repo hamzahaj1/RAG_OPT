@@ -503,6 +503,17 @@ jour à la fin de chaque jalon.
 **Claude Code** — exécuteur local. Reçoit des prompts précis et bornés, avec les
 contraintes Alpha-Scope rappelées explicitement à chaque fois.
 
+**Spec Kit — mode manuel acté** (constat en ouverture de phase 3) : les
+commandes slash `/speckit.*` ne sont **pas installées** dans les sessions
+Claude Code (pas de `.claude/commands/`). Le cycle
+specify → plan → tasks → implement est déroulé **manuellement**, via les
+scripts de `.specify/scripts/bash/` et les templates de
+`.specify/templates/`, comme depuis la phase 2. Les artefacts produits
+(`spec.md`, `plan.md`, `tasks.md`, checklists) restent strictement
+conformes aux templates ; la constitution vit dans
+`.specify/memory/constitution.md` comme **projection de CLAUDE.md**
+(en cas de conflit, CLAUDE.md gagne).
+
 ---
 
 ## 10. Principes directeurs
