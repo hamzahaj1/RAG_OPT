@@ -29,6 +29,16 @@ from app.domains.organizations.schemas import (
 router = APIRouter(prefix="/organizations", tags=["organizations"])
 
 
+# [RAG]
+# signature: create_organization(data: OrganizationCreate,
+#   db: AsyncSession = Depends(get_db)) -> Organization
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, organizations.services.create_organization
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.post("", response_model=OrganizationRead, status_code=status.HTTP_201_CREATED)
 async def create_organization(
     data: OrganizationCreate, db: AsyncSession = Depends(get_db)
@@ -38,6 +48,15 @@ async def create_organization(
     return await services.create_organization(db, data)
 
 
+# [RAG]
+# signature: delete_organization(organization_id: int, db: AsyncSession = Depends(get_db)) -> None
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, organizations.services.delete_organization
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.delete("/{organization_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_organization(organization_id: int, db: AsyncSession = Depends(get_db)) -> None:
     """Supprime une organisation — 204 sans corps ; 404 si l'id est inconnu."""
@@ -45,6 +64,16 @@ async def delete_organization(organization_id: int, db: AsyncSession = Depends(g
     await services.delete_organization(db, organization_id)
 
 
+# [RAG]
+# signature: get_organization(organization_id: int,
+#   db: AsyncSession = Depends(get_db)) -> Organization
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, organizations.services.get_organization
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.get("/{organization_id}", response_model=OrganizationRead)
 async def get_organization(
     organization_id: int, db: AsyncSession = Depends(get_db)
@@ -54,6 +83,16 @@ async def get_organization(
     return await services.get_organization(db, organization_id)
 
 
+# [RAG]
+# signature: list_organizations(db: AsyncSession = Depends(get_db), limit: int = Query(default=50,
+#   ge=1, le=100), offset: int = Query(default=0, ge=0)) -> Sequence[Organization]
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, organizations.services.list_organizations
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.get("", response_model=list[OrganizationRead])
 async def list_organizations(
     db: AsyncSession = Depends(get_db),
@@ -65,6 +104,16 @@ async def list_organizations(
     return await services.list_organizations(db, limit, offset)
 
 
+# [RAG]
+# signature: update_organization(data: OrganizationUpdate, organization_id: int,
+#   db: AsyncSession = Depends(get_db)) -> Organization
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, organizations.services.update_organization
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.patch("/{organization_id}", response_model=OrganizationRead)
 async def update_organization(
     data: OrganizationUpdate, organization_id: int, db: AsyncSession = Depends(get_db)

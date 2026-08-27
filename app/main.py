@@ -31,6 +31,15 @@ from app.domains.users.router import router as users_router
 logger = logging.getLogger(__name__)
 
 
+# [RAG]
+# signature: create_app() -> FastAPI
+# weight: 1
+# tier: LEAF
+# calls: main.lifespan
+# called_by: none
+# reads: settings
+# mutates: none
+# [/RAG]
 def create_app() -> FastAPI:
     """Construit l'application FastAPI complète.
 
@@ -66,6 +75,15 @@ def create_app() -> FastAPI:
     return app
 
 
+# [RAG]
+# signature: lifespan(app: FastAPI) -> AsyncIterator[None]
+# weight: 2
+# tier: LEAF
+# calls: core.database.init_db_engine
+# called_by: main.create_app
+# reads: none
+# mutates: none
+# [/RAG]
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Démarrage et arrêt propres des ressources DB.

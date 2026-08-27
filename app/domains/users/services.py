@@ -27,6 +27,15 @@ from app.domains.users.schemas import UserCreate, UserUpdate
 # [CODE_START]
 
 
+# [RAG]
+# signature: _hash_password(password: str) -> str
+# weight: 2
+# tier: CORE
+# calls: none
+# called_by: users.services.create_user, users.services.update_user
+# reads: none
+# mutates: none
+# [/RAG]
 def _hash_password(password: str) -> str:
     """Dérive l'empreinte bcrypt irréversible d'un mot de passe (FR-009).
 
@@ -44,6 +53,15 @@ def _hash_password(password: str) -> str:
     return hashed.decode("utf-8")
 
 
+# [RAG]
+# signature: create_user(db: AsyncSession, data: UserCreate) -> User
+# weight: 3
+# tier: CORE
+# calls: users.services._hash_password
+# called_by: scripts.seed._ensure_user, users.router.create_user
+# reads: users
+# mutates: users
+# [/RAG]
 async def create_user(db: AsyncSession, data: UserCreate) -> User:
     """Crée un utilisateur.
 
@@ -77,6 +95,15 @@ async def create_user(db: AsyncSession, data: UserCreate) -> User:
     return user
 
 
+# [RAG]
+# signature: delete_user(db: AsyncSession, user_id: int) -> None
+# weight: 2
+# tier: LEAF
+# calls: users.services.get_user
+# called_by: users.router.delete_user
+# reads: comments, organizations
+# mutates: users
+# [/RAG]
 async def delete_user(db: AsyncSession, user_id: int) -> None:
     """Supprime un utilisateur.
 
@@ -113,6 +140,15 @@ async def delete_user(db: AsyncSession, user_id: int) -> None:
     await db.commit()
 
 
+# [RAG]
+# signature: get_user(db: AsyncSession, user_id: int) -> User
+# weight: 3
+# tier: CORE
+# calls: none
+# called_by: users.router.get_user, users.services.delete_user, users.services.update_user
+# reads: users
+# mutates: none
+# [/RAG]
 async def get_user(db: AsyncSession, user_id: int) -> User:
     """Consulte un utilisateur par identifiant.
 
@@ -133,6 +169,15 @@ async def get_user(db: AsyncSession, user_id: int) -> User:
     return user
 
 
+# [RAG]
+# signature: list_users(db: AsyncSession, limit: int, offset: int) -> Sequence[User]
+# weight: 1
+# tier: LEAF
+# calls: none
+# called_by: users.router.list_users
+# reads: users
+# mutates: none
+# [/RAG]
 async def list_users(db: AsyncSession, limit: int, offset: int) -> Sequence[User]:
     """Liste les utilisateurs par page.
 
@@ -150,6 +195,15 @@ async def list_users(db: AsyncSession, limit: int, offset: int) -> Sequence[User
     return users
 
 
+# [RAG]
+# signature: update_user(db: AsyncSession, data: UserUpdate, user_id: int) -> User
+# weight: 3
+# tier: LEAF
+# calls: users.services._hash_password, users.services.get_user
+# called_by: users.router.update_user
+# reads: users
+# mutates: users
+# [/RAG]
 async def update_user(db: AsyncSession, data: UserUpdate, user_id: int) -> User:
     """Modifie partiellement un utilisateur.
 

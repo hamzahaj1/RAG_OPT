@@ -25,6 +25,15 @@ from app.domains.projects.schemas import ProjectCreate, ProjectRead, ProjectUpda
 router = APIRouter(prefix="/projects", tags=["projects"])
 
 
+# [RAG]
+# signature: create_project(data: ProjectCreate, db: AsyncSession = Depends(get_db)) -> Project
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, projects.services.create_project
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.post("", response_model=ProjectRead, status_code=status.HTTP_201_CREATED)
 async def create_project(data: ProjectCreate, db: AsyncSession = Depends(get_db)) -> Project:
     """Crée un projet — 201 ; 404 organisation inexistante ; 409 nom pris dans l'org."""
@@ -32,6 +41,15 @@ async def create_project(data: ProjectCreate, db: AsyncSession = Depends(get_db)
     return await services.create_project(db, data)
 
 
+# [RAG]
+# signature: delete_project(project_id: int, db: AsyncSession = Depends(get_db)) -> None
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, projects.services.delete_project
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_project(project_id: int, db: AsyncSession = Depends(get_db)) -> None:
     """Supprime un projet — 204 sans corps, cascade DB en aval ; 404 id inconnu."""
@@ -39,6 +57,15 @@ async def delete_project(project_id: int, db: AsyncSession = Depends(get_db)) ->
     await services.delete_project(db, project_id)
 
 
+# [RAG]
+# signature: get_project(project_id: int, db: AsyncSession = Depends(get_db)) -> Project
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, projects.services.get_project
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.get("/{project_id}", response_model=ProjectRead)
 async def get_project(project_id: int, db: AsyncSession = Depends(get_db)) -> Project:
     """Consulte un projet — 200 ; 404 si l'id est inconnu."""
@@ -46,6 +73,16 @@ async def get_project(project_id: int, db: AsyncSession = Depends(get_db)) -> Pr
     return await services.get_project(db, project_id)
 
 
+# [RAG]
+# signature: list_projects(db: AsyncSession = Depends(get_db), limit: int = Query(default=50, ge=1,
+#   le=100), offset: int = Query(default=0, ge=0)) -> Sequence[Project]
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, projects.services.list_projects
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.get("", response_model=list[ProjectRead])
 async def list_projects(
     db: AsyncSession = Depends(get_db),
@@ -57,6 +94,16 @@ async def list_projects(
     return await services.list_projects(db, limit, offset)
 
 
+# [RAG]
+# signature: update_project(data: ProjectUpdate, project_id: int,
+#   db: AsyncSession = Depends(get_db)) -> Project
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, projects.services.update_project
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.patch("/{project_id}", response_model=ProjectRead)
 async def update_project(
     data: ProjectUpdate, project_id: int, db: AsyncSession = Depends(get_db)

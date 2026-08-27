@@ -25,6 +25,15 @@ from app.domains.users.schemas import UserCreate, UserRead, UserUpdate
 router = APIRouter(prefix="/users", tags=["users"])
 
 
+# [RAG]
+# signature: create_user(data: UserCreate, db: AsyncSession = Depends(get_db)) -> User
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, users.services.create_user
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.post("", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 async def create_user(data: UserCreate, db: AsyncSession = Depends(get_db)) -> User:
     """Crée un utilisateur — 201 ; 409 si l'email est déjà enregistré."""
@@ -32,6 +41,15 @@ async def create_user(data: UserCreate, db: AsyncSession = Depends(get_db)) -> U
     return await services.create_user(db, data)
 
 
+# [RAG]
+# signature: delete_user(user_id: int, db: AsyncSession = Depends(get_db)) -> None
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, users.services.delete_user
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)) -> None:
     """Supprime un utilisateur — 204 sans corps ; 404 si l'id est inconnu."""
@@ -39,6 +57,15 @@ async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)) -> None:
     await services.delete_user(db, user_id)
 
 
+# [RAG]
+# signature: get_user(user_id: int, db: AsyncSession = Depends(get_db)) -> User
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, users.services.get_user
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.get("/{user_id}", response_model=UserRead)
 async def get_user(user_id: int, db: AsyncSession = Depends(get_db)) -> User:
     """Consulte un utilisateur — 200 ; 404 si l'id est inconnu."""
@@ -46,6 +73,16 @@ async def get_user(user_id: int, db: AsyncSession = Depends(get_db)) -> User:
     return await services.get_user(db, user_id)
 
 
+# [RAG]
+# signature: list_users(db: AsyncSession = Depends(get_db), limit: int = Query(default=50, ge=1,
+#   le=100), offset: int = Query(default=0, ge=0)) -> Sequence[User]
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, users.services.list_users
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.get("", response_model=list[UserRead])
 async def list_users(
     db: AsyncSession = Depends(get_db),
@@ -57,6 +94,15 @@ async def list_users(
     return await services.list_users(db, limit, offset)
 
 
+# [RAG]
+# signature: update_user(data: UserUpdate, user_id: int, db: AsyncSession = Depends(get_db)) -> User
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, users.services.update_user
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.patch("/{user_id}", response_model=UserRead)
 async def update_user(data: UserUpdate, user_id: int, db: AsyncSession = Depends(get_db)) -> User:
     """Modifie partiellement un utilisateur — 200 ; 404 id inconnu ; 409 email pris."""

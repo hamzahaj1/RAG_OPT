@@ -26,6 +26,15 @@ from app.domains.projects.schemas import ProjectCreate, ProjectUpdate
 # [CODE_START]
 
 
+# [RAG]
+# signature: create_project(db: AsyncSession, data: ProjectCreate) -> Project
+# weight: 2
+# tier: CORE
+# calls: none
+# called_by: projects.router.create_project, scripts.seed._ensure_project
+# reads: organizations, projects
+# mutates: projects
+# [/RAG]
 async def create_project(db: AsyncSession, data: ProjectCreate) -> Project:
     """Crée un projet.
 
@@ -70,6 +79,15 @@ async def create_project(db: AsyncSession, data: ProjectCreate) -> Project:
     return project
 
 
+# [RAG]
+# signature: delete_project(db: AsyncSession, project_id: int) -> None
+# weight: 2
+# tier: LEAF
+# calls: projects.services.get_project
+# called_by: projects.router.delete_project
+# reads: none
+# mutates: projects
+# [/RAG]
 async def delete_project(db: AsyncSession, project_id: int) -> None:
     """Supprime un projet.
 
@@ -91,6 +109,16 @@ async def delete_project(db: AsyncSession, project_id: int) -> None:
     await db.commit()
 
 
+# [RAG]
+# signature: get_project(db: AsyncSession, project_id: int) -> Project
+# weight: 3
+# tier: CORE
+# calls: none
+# called_by: projects.router.get_project, projects.services.delete_project,
+#   projects.services.update_project
+# reads: projects
+# mutates: none
+# [/RAG]
 async def get_project(db: AsyncSession, project_id: int) -> Project:
     """Consulte un projet par identifiant.
 
@@ -111,6 +139,15 @@ async def get_project(db: AsyncSession, project_id: int) -> Project:
     return project
 
 
+# [RAG]
+# signature: list_projects(db: AsyncSession, limit: int, offset: int) -> Sequence[Project]
+# weight: 1
+# tier: LEAF
+# calls: none
+# called_by: projects.router.list_projects
+# reads: projects
+# mutates: none
+# [/RAG]
 async def list_projects(db: AsyncSession, limit: int, offset: int) -> Sequence[Project]:
     """Liste les projets par page.
 
@@ -130,6 +167,15 @@ async def list_projects(db: AsyncSession, limit: int, offset: int) -> Sequence[P
     return projects
 
 
+# [RAG]
+# signature: update_project(db: AsyncSession, data: ProjectUpdate, project_id: int) -> Project
+# weight: 2
+# tier: LEAF
+# calls: projects.services.get_project
+# called_by: projects.router.update_project
+# reads: projects
+# mutates: projects
+# [/RAG]
 async def update_project(db: AsyncSession, data: ProjectUpdate, project_id: int) -> Project:
     """Modifie partiellement un projet.
 

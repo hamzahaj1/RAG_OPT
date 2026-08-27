@@ -51,6 +51,24 @@ async_session_factory: async_sessionmaker[AsyncSession] = async_sessionmaker(
 )
 
 
+# [RAG]
+# signature: get_db() -> AsyncGenerator[AsyncSession, None]
+# weight: 25
+# tier: CRITICAL_CORE
+# calls: none
+# called_by: comments.router.create_comment, comments.router.delete_comment,
+#   comments.router.get_comment, comments.router.list_comments, comments.router.update_comment,
+#   organizations.router.create_organization, organizations.router.delete_organization,
+#   organizations.router.get_organization, organizations.router.list_organizations,
+#   organizations.router.update_organization, projects.router.create_project,
+#   projects.router.delete_project, projects.router.get_project, projects.router.list_projects,
+#   projects.router.update_project, tasks.router.create_task, tasks.router.delete_task,
+#   tasks.router.get_task, tasks.router.list_tasks, tasks.router.update_task,
+#   users.router.create_user, users.router.delete_user, users.router.get_user,
+#   users.router.list_users, users.router.update_user
+# reads: none
+# mutates: none
+# [/RAG]
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Fournit une session DB par requête HTTP (dépendance FastAPI).
 
@@ -69,6 +87,15 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
+# [RAG]
+# signature: init_db_engine() -> AsyncEngine
+# weight: 2
+# tier: CORE
+# calls: none
+# called_by: main.lifespan, scripts.seed.run
+# reads: settings
+# mutates: none
+# [/RAG]
 def init_db_engine() -> AsyncEngine:
     """Crée le moteur async du projet à partir du DSN de ``settings``.
 

@@ -1,6 +1,6 @@
 COMPOSE := podman compose
 
-.PHONY: help up down logs db-migrate db-revision db-seed
+.PHONY: help up down logs db-migrate db-revision db-seed rag-annotate rag-check
 
 .DEFAULT_GOAL := help
 
@@ -12,6 +12,8 @@ help:
 	@echo "  make db-migrate  - Applique les migrations Alembic"
 	@echo "  make db-revision - Génère une migration (m=\"message\") et la met aux normes Ruff"
 	@echo "  make db-seed     - Peuple la base de données (Phase 2, Jalon 9)"
+	@echo "  make rag-annotate - Régénère les annotations RAG du corpus app/ (Phase 3)"
+	@echo "  make rag-check   - Annotation + git diff --exit-code (contrôle de dérive RAG)"
 
 up:
 	$(COMPOSE) up -d
@@ -39,3 +41,11 @@ endif
 
 db-seed:
 	poetry run python -m app.scripts.seed
+
+rag-annotate:
+	poetry run python -m scripts.generate_topology_headers
+	@echo "✓ Annotations RAG régénérées"
+
+rag-check: rag-annotate
+	git diff --exit-code -- app/ TOPOLOGY.yaml
+	@echo "✓ Annotation à jour — aucune dérive"

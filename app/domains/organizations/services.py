@@ -27,6 +27,15 @@ from app.domains.users.models import User
 # [CODE_START]
 
 
+# [RAG]
+# signature: create_organization(db: AsyncSession, data: OrganizationCreate) -> Organization
+# weight: 2
+# tier: CORE
+# calls: none
+# called_by: organizations.router.create_organization, scripts.seed._ensure_organization
+# reads: organizations, users
+# mutates: organizations
+# [/RAG]
 async def create_organization(db: AsyncSession, data: OrganizationCreate) -> Organization:
     """Crée une organisation.
 
@@ -60,6 +69,15 @@ async def create_organization(db: AsyncSession, data: OrganizationCreate) -> Org
     return organization
 
 
+# [RAG]
+# signature: delete_organization(db: AsyncSession, organization_id: int) -> None
+# weight: 2
+# tier: LEAF
+# calls: organizations.services.get_organization
+# called_by: organizations.router.delete_organization
+# reads: projects
+# mutates: organizations
+# [/RAG]
 async def delete_organization(db: AsyncSession, organization_id: int) -> None:
     """Supprime une organisation.
 
@@ -90,6 +108,16 @@ async def delete_organization(db: AsyncSession, organization_id: int) -> None:
     await db.commit()
 
 
+# [RAG]
+# signature: get_organization(db: AsyncSession, organization_id: int) -> Organization
+# weight: 3
+# tier: CORE
+# calls: none
+# called_by: organizations.router.get_organization, organizations.services.delete_organization,
+#   organizations.services.update_organization
+# reads: organizations
+# mutates: none
+# [/RAG]
 async def get_organization(db: AsyncSession, organization_id: int) -> Organization:
     """Consulte une organisation par identifiant.
 
@@ -110,6 +138,15 @@ async def get_organization(db: AsyncSession, organization_id: int) -> Organizati
     return organization
 
 
+# [RAG]
+# signature: list_organizations(db: AsyncSession, limit: int, offset: int) -> Sequence[Organization]
+# weight: 1
+# tier: LEAF
+# calls: none
+# called_by: organizations.router.list_organizations
+# reads: organizations
+# mutates: none
+# [/RAG]
 async def list_organizations(db: AsyncSession, limit: int, offset: int) -> Sequence[Organization]:
     """Liste les organisations par page.
 
@@ -129,6 +166,16 @@ async def list_organizations(db: AsyncSession, limit: int, offset: int) -> Seque
     return organizations
 
 
+# [RAG]
+# signature: update_organization(db: AsyncSession, data: OrganizationUpdate,
+#   organization_id: int) -> Organization
+# weight: 2
+# tier: LEAF
+# calls: organizations.services.get_organization
+# called_by: organizations.router.update_organization
+# reads: organizations
+# mutates: organizations
+# [/RAG]
 async def update_organization(
     db: AsyncSession, data: OrganizationUpdate, organization_id: int
 ) -> Organization:

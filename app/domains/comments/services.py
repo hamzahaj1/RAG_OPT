@@ -28,6 +28,15 @@ from app.domains.users.models import User
 # [CODE_START]
 
 
+# [RAG]
+# signature: create_comment(db: AsyncSession, data: CommentCreate) -> Comment
+# weight: 2
+# tier: CORE
+# calls: none
+# called_by: comments.router.create_comment, scripts.seed._ensure_comment
+# reads: tasks, users
+# mutates: comments
+# [/RAG]
 async def create_comment(db: AsyncSession, data: CommentCreate) -> Comment:
     """Crée un commentaire.
 
@@ -67,6 +76,15 @@ async def create_comment(db: AsyncSession, data: CommentCreate) -> Comment:
     return comment
 
 
+# [RAG]
+# signature: delete_comment(db: AsyncSession, comment_id: int) -> None
+# weight: 2
+# tier: LEAF
+# calls: comments.services.get_comment
+# called_by: comments.router.delete_comment
+# reads: none
+# mutates: comments
+# [/RAG]
 async def delete_comment(db: AsyncSession, comment_id: int) -> None:
     """Supprime un commentaire.
 
@@ -87,6 +105,16 @@ async def delete_comment(db: AsyncSession, comment_id: int) -> None:
     await db.commit()
 
 
+# [RAG]
+# signature: get_comment(db: AsyncSession, comment_id: int) -> Comment
+# weight: 3
+# tier: CORE
+# calls: none
+# called_by: comments.router.get_comment, comments.services.delete_comment,
+#   comments.services.update_comment
+# reads: comments
+# mutates: none
+# [/RAG]
 async def get_comment(db: AsyncSession, comment_id: int) -> Comment:
     """Consulte un commentaire par identifiant.
 
@@ -107,6 +135,16 @@ async def get_comment(db: AsyncSession, comment_id: int) -> Comment:
     return comment
 
 
+# [RAG]
+# signature: list_comments(db: AsyncSession, limit: int, offset: int,
+#   task_id: int) -> Sequence[Comment]
+# weight: 1
+# tier: LEAF
+# calls: none
+# called_by: comments.router.list_comments
+# reads: comments, tasks
+# mutates: none
+# [/RAG]
 async def list_comments(
     db: AsyncSession, limit: int, offset: int, task_id: int
 ) -> Sequence[Comment]:
@@ -144,6 +182,15 @@ async def list_comments(
     return comments
 
 
+# [RAG]
+# signature: update_comment(db: AsyncSession, comment_id: int, data: CommentUpdate) -> Comment
+# weight: 2
+# tier: LEAF
+# calls: comments.services.get_comment
+# called_by: comments.router.update_comment
+# reads: none
+# mutates: comments
+# [/RAG]
 async def update_comment(db: AsyncSession, comment_id: int, data: CommentUpdate) -> Comment:
     """Modifie partiellement un commentaire.
 

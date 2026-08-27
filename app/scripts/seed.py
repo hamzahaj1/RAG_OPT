@@ -293,6 +293,16 @@ SEED_USERS: tuple[SeedUser, ...] = (
 )
 
 
+# [RAG]
+# signature: _ensure_comment(db: AsyncSession, author_id: int, data: SeedComment,
+#   task_id: int) -> Comment
+# weight: 2
+# tier: CORE
+# calls: comments.services.create_comment
+# called_by: scripts.seed.seed_database
+# reads: comments
+# mutates: none
+# [/RAG]
 async def _ensure_comment(
     db: AsyncSession, author_id: int, data: SeedComment, task_id: int
 ) -> Comment:
@@ -326,6 +336,16 @@ async def _ensure_comment(
     )
 
 
+# [RAG]
+# signature: _ensure_organization(db: AsyncSession, data: SeedOrganization,
+#   owner_id: int) -> Organization
+# weight: 2
+# tier: CORE
+# calls: organizations.services.create_organization
+# called_by: scripts.seed.seed_database
+# reads: organizations
+# mutates: none
+# [/RAG]
 async def _ensure_organization(
     db: AsyncSession, data: SeedOrganization, owner_id: int
 ) -> Organization:
@@ -352,6 +372,15 @@ async def _ensure_organization(
     )
 
 
+# [RAG]
+# signature: _ensure_project(db: AsyncSession, data: SeedProject, organization_id: int) -> Project
+# weight: 2
+# tier: CORE
+# calls: projects.services.create_project
+# called_by: scripts.seed.seed_database
+# reads: projects
+# mutates: none
+# [/RAG]
 async def _ensure_project(db: AsyncSession, data: SeedProject, organization_id: int) -> Project:
     """Retourne le projet de clé naturelle (organization, name), créé au besoin.
 
@@ -383,6 +412,16 @@ async def _ensure_project(db: AsyncSession, data: SeedProject, organization_id: 
     )
 
 
+# [RAG]
+# signature: _ensure_task(db: AsyncSession, assignee_id: int | None, data: SeedTask,
+#   project_id: int) -> Task
+# weight: 2
+# tier: CORE
+# calls: tasks.services.create_task
+# called_by: scripts.seed.seed_database
+# reads: tasks
+# mutates: none
+# [/RAG]
 async def _ensure_task(
     db: AsyncSession, assignee_id: int | None, data: SeedTask, project_id: int
 ) -> Task:
@@ -420,6 +459,15 @@ async def _ensure_task(
     )
 
 
+# [RAG]
+# signature: _ensure_user(db: AsyncSession, data: SeedUser) -> User
+# weight: 2
+# tier: CORE
+# calls: users.services.create_user
+# called_by: scripts.seed.seed_database
+# reads: users
+# mutates: none
+# [/RAG]
 async def _ensure_user(db: AsyncSession, data: SeedUser) -> User:
     """Retourne l'utilisateur de clé naturelle ``email``, créé au besoin.
 
@@ -442,6 +490,15 @@ async def _ensure_user(db: AsyncSession, data: SeedUser) -> User:
     return await users_services.create_user(db, UserCreate.model_validate(data))
 
 
+# [RAG]
+# signature: main() -> None
+# weight: 1
+# tier: LEAF
+# calls: scripts.seed.run
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 def main() -> None:
     """Point d'entrée synchrone de ``python -m app.scripts.seed``.
 
@@ -453,6 +510,15 @@ def main() -> None:
     asyncio.run(run())
 
 
+# [RAG]
+# signature: run() -> None
+# weight: 3
+# tier: CORE
+# calls: core.database.init_db_engine, scripts.seed.seed_database
+# called_by: scripts.seed.main
+# reads: none
+# mutates: none
+# [/RAG]
 async def run() -> None:
     """Exécute le seed sur la base du projet via le moteur applicatif.
 
@@ -480,6 +546,16 @@ async def run() -> None:
         await engine.dispose()
 
 
+# [RAG]
+# signature: seed_database(db: AsyncSession) -> None
+# weight: 6
+# tier: CORE
+# calls: scripts.seed._ensure_comment, scripts.seed._ensure_organization,
+#   scripts.seed._ensure_project, scripts.seed._ensure_task, scripts.seed._ensure_user
+# called_by: scripts.seed.run
+# reads: none
+# mutates: none
+# [/RAG]
 async def seed_database(db: AsyncSession) -> None:
     """Sème les cinq domaines dans l'ordre du graphe, par clé naturelle.
 

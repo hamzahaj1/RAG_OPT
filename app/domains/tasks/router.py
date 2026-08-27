@@ -25,6 +25,15 @@ from app.domains.tasks.schemas import TaskCreate, TaskRead, TaskUpdate
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
+# [RAG]
+# signature: create_task(data: TaskCreate, db: AsyncSession = Depends(get_db)) -> Task
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, tasks.services.create_task
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.post("", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
 async def create_task(data: TaskCreate, db: AsyncSession = Depends(get_db)) -> Task:
     """Crée une tâche — 201 ; 404 projet ou assigné inexistant ; 422 enum invalide."""
@@ -32,6 +41,15 @@ async def create_task(data: TaskCreate, db: AsyncSession = Depends(get_db)) -> T
     return await services.create_task(db, data)
 
 
+# [RAG]
+# signature: delete_task(task_id: int, db: AsyncSession = Depends(get_db)) -> None
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, tasks.services.delete_task
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_task(task_id: int, db: AsyncSession = Depends(get_db)) -> None:
     """Supprime une tâche — 204 sans corps, cascade DB en aval ; 404 id inconnu."""
@@ -39,6 +57,15 @@ async def delete_task(task_id: int, db: AsyncSession = Depends(get_db)) -> None:
     await services.delete_task(db, task_id)
 
 
+# [RAG]
+# signature: get_task(task_id: int, db: AsyncSession = Depends(get_db)) -> Task
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, tasks.services.get_task
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.get("/{task_id}", response_model=TaskRead)
 async def get_task(task_id: int, db: AsyncSession = Depends(get_db)) -> Task:
     """Consulte une tâche — 200 ; 404 si l'id est inconnu."""
@@ -46,6 +73,16 @@ async def get_task(task_id: int, db: AsyncSession = Depends(get_db)) -> Task:
     return await services.get_task(db, task_id)
 
 
+# [RAG]
+# signature: list_tasks(db: AsyncSession = Depends(get_db), limit: int = Query(default=50, ge=1,
+#   le=100), offset: int = Query(default=0, ge=0)) -> Sequence[Task]
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, tasks.services.list_tasks
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.get("", response_model=list[TaskRead])
 async def list_tasks(
     db: AsyncSession = Depends(get_db),
@@ -57,6 +94,15 @@ async def list_tasks(
     return await services.list_tasks(db, limit, offset)
 
 
+# [RAG]
+# signature: update_task(data: TaskUpdate, task_id: int, db: AsyncSession = Depends(get_db)) -> Task
+# weight: 2
+# tier: LEAF
+# calls: core.database.get_db, tasks.services.update_task
+# called_by: none
+# reads: none
+# mutates: none
+# [/RAG]
 @router.patch("/{task_id}", response_model=TaskRead)
 async def update_task(data: TaskUpdate, task_id: int, db: AsyncSession = Depends(get_db)) -> Task:
     """Modifie partiellement une tâche — 200 ; 404 tâche ou assigné ; 422 enum."""

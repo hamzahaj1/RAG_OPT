@@ -33,7 +33,7 @@ toutes les fonctions des `services.py` et `router.py` des cinq domaines.
 **Independent Test** : exécution sur le code de la phase 2 — zéro import non
 résolu, en-têtes complets sur les 5 domaines, double exécution = diff vide.
 
-- [ ] **T056** [J10] **Module d'analyse partagé** `scripts/corpus_analysis.py`
+- [x] **T056** [J10] **Module d'analyse partagé** `scripts/corpus_analysis.py`
       (Standard V3 intégral, hors corpus — **avant les deux générateurs**,
       arbitrage acté) : découverte `sorted(Path("app").rglob("*.py"))` (R6) ;
       parse AST ; table des imports/alias par module (R2.2) ; résolution avec
@@ -42,14 +42,14 @@ résolu, en-têtes complets sur les 5 domaines, double exécution = diff vide.
       `reads`/`mutates` par motifs SQLAlchemy (R2) ; calcul `weight`/`tier`
       (R1, ordre `CRITICAL_CORE` → `CORE` → `LEAF`). API pure : le module
       analyse et retourne, il n'écrit aucun fichier.
-- [ ] **T057** [P] [J10] Tests unitaires du module dans
+- [x] **T057** [P] [J10] Tests unitaires du module dans
       `tests/unit/test_corpus_analysis.py`, sur mini-corpus fixture :
       résolution d'alias (`import ... as s ; s.f()`), règle `Depends`
       (`get_db` reçoit ses arêtes entrantes), weight/tier conformes à R1
       (cas limites : LEAF jamais appelé hors routeur, CRITICAL_CORE 3+
       domaines non dilué), symbole non résolu → erreur nommée, jamais un
       en-tête incomplet.
-- [ ] **T058** [J10] Générateur `scripts/generate_topology_headers.py`
+- [x] **T058** [J10] Générateur `scripts/generate_topology_headers.py`
       (consommateur de `corpus_analysis`) : blocs `# [RAG]` … `# [/RAG]` au
       format normatif du plan (§ Formats — champs en ordre fixe, listes
       triées ASCII, `none` si vide) ; ancrage immédiatement au-dessus du
@@ -59,16 +59,16 @@ résolu, en-têtes complets sur les 5 domaines, double exécution = diff vide.
       `router.py` des cinq domaines, `app/core/config.py`,
       `app/core/database.py`, `app/main.py` et `app/scripts/seed.py`
       (périmètre étendu par amendement de gouvernance — CLAUDE.md §7).
-- [ ] **T059** [P] [J10] Tests du générateur dans
+- [x] **T059** [P] [J10] Tests du générateur dans
       `tests/unit/test_topology_headers.py` : format et ancrage du bloc,
       idempotence (double exécution sur fixture → contenu strictement
       identique), remplacement (un bloc périmé ne survit pas, aucune
       accumulation), fichiers hors cible intouchés.
-- [ ] **T060** [J10] Makefile : cible `rag-annotate` (forme jalon 10 : la
+- [x] **T060** [J10] Makefile : cible `rag-annotate` (forme jalon 10 : la
       topologie seule) et cible `rag-check` = `rag-annotate` puis
       `git diff --exit-code -- app/ TOPOLOGY.yaml` (R7, modèle du contrôle
       de dérive Alembic) ; entrées `help` correspondantes.
-- [ ] **T061** [J10] Exécution réelle sur `app/` : zéro import non résolu ;
+- [x] **T061** [J10] Exécution réelle sur `app/` : zéro import non résolu ;
       en-tête complet sur 100 % des fonctions du corpus hors
       `models.py`/`schemas.py` — services et routeurs des 5 domaines,
       `core/config.py`, `core/database.py`, `main.py`, `scripts/seed.py`
@@ -76,11 +76,11 @@ résolu, en-têtes complets sur les 5 domaines, double exécution = diff vide.
       code — **`get_db` est `CRITICAL_CORE` avec `called_by` couvrant les
       5 domaines** (via `Depends`), `delete_user` avec `reads`
       organizations/comments et ses appelants réels.
-- [ ] **T062** [J10] **GATE 10 — complet, APRÈS annotation** :
+- [x] **T062** [J10] **GATE 10 — complet, APRÈS annotation** :
       `make rag-check` vert (idempotence prouvée) ; pytest intégral (les
       117 tests de la phase 2 + T057/T059) ; MyPy `--strict` ; Ruff
       `check` + `format --check` (R10, SC-003).
-- [ ] **T063** [J10] **COMMIT de gate du jalon 10** sur
+- [x] **T063** [J10] **COMMIT de gate du jalon 10** sur
       `002-phase3-metadata` — le jalon n'est clos qu'une fois commité
       (FR-019).
 
