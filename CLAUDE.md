@@ -114,6 +114,10 @@ Décisions locales actées, à ne pas remettre en cause sans nouvelle décision 
 - **Génération de migrations** : toujours via `make db-revision m="message"`
   (autogenerate + `ruff check --fix` + `ruff format` sur `alembic/versions/`),
   jamais `alembic revision` à la main.
+- **Corpus RAG indexable : `app/` exclusivement.** `scripts/`, `.specify/`,
+  `specs/`, `tests/` et `alembic/` sont **hors corpus** ; les scripts de
+  `scripts/` suivent néanmoins le Standard Alpha-Scope V3 (§6 : « tous les
+  fichiers »). Acté à l'ouverture de la phase 3.
 - **Git** : initialisé **rétroactivement en clôture de phase 2** (constat :
   jamais init depuis le jalon 0) — la phase 2 entre dans l'historique comme
   **instantané unique** (`b60e2cf` sur `main`) taggé `phase-2-complete`,
