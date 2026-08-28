@@ -178,17 +178,18 @@ qualifiés triés) **en dernier** — le signal sémantique d'abord, l'annuaire
 ensuite : la docstring d'une fonction au cœur critique (`get_db`) doit
 entrer dans les ~500 premiers caractères du chunk.
 
-**Plafond des listes d'appels (normatif — amendement J10)** : `calls` et
-`called_by` sont **plafonnés à 5 entrées** dans l'en-tête. Au-delà, repli
-en **synthèse déterministe** :
-`N appels entrants — M domaines (liste triée des domaines) — détail : TOPOLOGY.yaml`
-(« appels sortants » pour `calls`). Le graphe intégral reste dans
+**Plafond des listes d'appels (normatif — amendement J10 ; gabarit
+anglais depuis le 2026-08-28, politique de langue CLAUDE.md §4 ter)** :
+`calls` et `called_by` sont **plafonnés à 5 entrées** dans l'en-tête.
+Au-delà, repli en **synthèse déterministe** :
+`N inbound calls — M domains (liste triée des domaines) — details: TOPOLOGY.yaml`
+(« outbound calls » pour `calls`). Le graphe intégral reste dans
 `TOPOLOGY.yaml` — l'en-tête redevient un résumé, c'était sa vocation.
 Exemple réel (`get_db`) :
 
 ```python
-# called_by: 25 appels entrants — 5 domaines (comments, organizations, projects, tasks,
-#   users) — détail : TOPOLOGY.yaml
+# called_by: 25 inbound calls — 5 domains (comments, organizations, projects, tasks,
+#   users) — details: TOPOLOGY.yaml
 ```
 
 **Repli des lignes longues (normatif ; précisé le 2026-08-28 avec les
@@ -210,8 +211,8 @@ module. Un bloc par entité du fichier (phase 2 : une entité par fichier).
 
 ```python
 # [MODEL]
-# synthese: Un User est référencé par comments.author_id (RESTRICT — blocage),
-#   organizations.owner_id (RESTRICT — blocage), tasks.assignee_id (SET NULL — désassignation).
+# synthesis: A User is referenced by comments.author_id (RESTRICT — blocked),
+#   organizations.owner_id (RESTRICT — blocked), tasks.assignee_id (SET NULL — unassigned).
 # entity: User
 # table: users
 # columns: created_at, email, full_name, hashed_password, id, role, updated_at
@@ -220,14 +221,17 @@ module. Un bloc par entité du fichier (phase 2 : une entité par fichier).
 # [/MODEL]
 ```
 
-Champs **(amendés le 2026-08-28, boucle J11 sur relevé R1)** : `synthese`
-(**première ligne du bloc** — synthèse en langage naturel **français**, la
-langue des docstrings du corpus, **générée et déterministe** depuis les
-données FK, jamais rédigée : gabarit « Un {Entité} est référencé par
-{table.colonne} ({politique} — {glose}), … » avec gloses figées
-RESTRICT → blocage, CASCADE → suppression en cascade, SET NULL →
-désassignation ; entité sans arête entrante → « Un {Entité} n'est référencé
-par aucune table. »), puis `entity`, `table`, `columns` (triées), `fks`
+Champs **(amendés le 2026-08-28, boucle J11 sur relevé R1 ; gabarit
+anglais et clé `synthesis` depuis le 2026-08-28, politique de langue
+CLAUDE.md §4 ter — la clé française `synthese` est renommée avec le
+gabarit, dernier jeton français du bloc)** : `synthesis` (**première
+ligne du bloc** — synthèse en langage naturel **anglais**, la langue du
+corpus indexable, **générée et déterministe** depuis les données FK,
+jamais rédigée : gabarit « A {Entity} is referenced by {table.column}
+({policy} — {gloss}), … » avec gloses figées RESTRICT → blocked,
+CASCADE → cascade-deleted, SET NULL → unassigned ; entité sans arête
+entrante → « A {Entity} is not referenced by any table. »), puis
+`entity`, `table`, `columns` (triées), `fks`
 (`colonne -> table.colonne [politique]`, triées), `referenced_by` (arêtes
 entrantes avec politique `ondelete`, triées — dérivées du graphe complet des
 modèles, c'est le signal RAG des questions de suppression).
@@ -238,18 +242,20 @@ Même ancrage que `[MODEL]`.
 
 ```python
 # [SCHEMA]
-# synthese: Les 4 schémas Pydantic du domaine users portent le contrat de l'entité User.
+# synthesis: The 4 Pydantic schemas of the users domain carry the contract of the User entity.
 # domain: users
 # schemas: UserBase(BaseModel), UserCreate(UserBase), UserRead(UserBase), UserUpdate(BaseModel)
 # entity: User
 # [/SCHEMA]
 ```
 
-Champs **(amendés le 2026-08-28, par cohérence avec `[MODEL]`)** :
-`synthese` (première ligne — gabarit déterministe « Les {n} schémas
-Pydantic du domaine {domaine} portent le contrat de l'entité {Entité}. »),
-puis `domain`, `schemas` (classes triées avec leur base directe), `entity`
-(modèle SQLAlchemy correspondant du domaine).
+Champs **(amendés le 2026-08-28, par cohérence avec `[MODEL]` ; gabarit
+anglais et clé `synthesis` depuis le 2026-08-28, CLAUDE.md §4 ter)** :
+`synthesis` (première ligne — gabarit déterministe « The {n} Pydantic
+schemas of the {domain} domain carry the contract of the {Entity}
+entity. », accord du verbe au singulier « The Pydantic schema … carries
+… » pour n = 1), puis `domain`, `schemas` (classes triées avec leur base
+directe), `entity` (modèle SQLAlchemy correspondant du domaine).
 
 ### `TOPOLOGY.yaml` (racine)
 
