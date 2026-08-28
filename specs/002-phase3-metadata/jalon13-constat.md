@@ -88,6 +88,25 @@ c'est la seule modification depuis R2.
   automatique, pas de double préfixe).
 - Questions françaises verbatim, k=5, échantillon et chunking inchangés.
 
+## Amendement de protocole R4 (2026-08-28) — langue des questions
+
+Décision de gouvernance (CLAUDE.md §4 ter, étape 3 du séquencement) :
+**la langue des questions suit celle du corpus**. Le corpus indexable
+ayant été migré vers l'anglais (lots a–c, commits `04aa776`, `e5f5a12`,
+`4477bca`), les questions gelées du §1 sont traduites — traduction
+fidèle, mêmes intentions de retrieval :
+
+| Question | Verbatim anglais (gelé pour R4) |
+|---|---|
+| Q1 | « what happens when a user is deleted? » |
+| Q2 | « how does an HTTP request obtain a database session? » |
+
+Toutes les autres variables restent celles de R3 : même modèle
+(`intfloat/multilingual-e5-large` + préfixes), même k, même
+échantillon, même chunking. **R1–R3 restent intacts au constat** ; la
+comparaison R3 → R4 documente l'effet de langue — donnée d'enseignement
+pour la phase 5. Arrêt après R4, verdict quel qu'il soit.
+
 ## Inventaire des chunks (T076 — avant tout relevé)
 
 **19 chunks** : `users.services` 6 × [RAG] (`_hash_password`,
