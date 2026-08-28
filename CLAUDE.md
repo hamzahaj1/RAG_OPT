@@ -138,6 +138,46 @@ Décisions locales actées, à ne pas remettre en cause sans nouvelle décision 
 
 ---
 
+## 4 ter. Politique de langue
+
+Décision de gouvernance actée le 2026-08-28 (jalon 13 en cours).
+
+- **Langue de gouvernance : FRANÇAIS** — les échanges, `CLAUDE.md`, la
+  constitution, les specs/plans/tasks, le constat du jalon 13, les
+  messages de commit.
+- **Langue du corpus indexable : ANGLAIS** — tout ce qui sera vectorisé :
+  docstrings de `app/`, postconditions `[STEP]`, synthèses générées des
+  en-têtes `[RAG]`/`[MODEL]`/`[SCHEMA]`, `CONTRACTS.md`.
+- **Raison consignée** : alignement sur la langue à haute ressource des
+  modèles d'embedding et de raisonnement (phase 5), et résorption de
+  l'incohérence actuelle (identifiants et messages API déjà en anglais,
+  docstrings en français).
+
+**Séquencement acté — la migration linguistique n'est pas mêlée au
+relevé R3 du jalon 13 :**
+
+1. **R3 d'abord** : `intfloat/multilingual-e5-large` + préfixes
+   `query:`/`passage:` (piste 4 instruite — changement d'une variable
+   gelée du protocole), corpus français actuel, questions françaises
+   verbatim — une seule variable modifiée depuis R2. Arrêt après verdict.
+2. **Après R3 (quel que soit le verdict)** : migration linguistique en
+   trois lots, chacun gaté et commité — (a) générateurs : gabarits des
+   synthèses en anglais, régénération `rag-annotate`, `rag-check` vert ;
+   (b) `app/` : docstrings Zone A et postconditions `[STEP]` réécrites
+   en anglais — réécriture fidèle, invariant par invariant, **aucun
+   changement fonctionnel** (les tests doivent passer inchangés, c'est
+   le garde-fou) ; (c) `CONTRACTS.md` traduit (il est dans le corpus).
+3. **Amendement de protocole** (commit) : les questions du jalon 13
+   suivent la langue du corpus — Q1 « what happens when a user is
+   deleted? », Q2 « how does an HTTP request obtain a database
+   session? ». Puis **relevé R4** : corpus anglais, questions anglaises,
+   même modèle, même k, même échantillon. R1–R3 restent intacts au
+   constat ; la comparaison R3 → R4 documente l'effet de langue — donnée
+   d'enseignement pour la phase 5. Arrêt après R4, verdict quel qu'il
+   soit.
+
+---
+
 ## 5. Architecture
 
 Clean Architecture fusionnée avec Domain-Driven Design.
