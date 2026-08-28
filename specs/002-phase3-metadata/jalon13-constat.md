@@ -1,13 +1,13 @@
 # Jalon 13 — Constat du test RAG précoce
 
 **Branch**: `002-phase3-metadata` | **Protocole consigné le**: 2026-08-28
-| **Statut**: relevé R3 exécuté le 2026-08-28 sur piste 4 instruite
-(décision de gouvernance — modèle `intfloat/multilingual-e5-large` +
-préfixes `query:`/`passage:`, seule variable modifiée) — **Q2 en SUCCÈS
-intégral (première question résolue du jalon), Q1 en ÉCHEC persistant
-sur le seul critère B** (`User [MODEL]` rang 6, à 0.0018 du seuil) ;
-exécution arrêtée (protocole §5), suite actée : migration linguistique
-du corpus puis relevé R4 (CLAUDE.md §4 ter)
+| **Statut**: relevé R4 exécuté le 2026-08-28 après migration
+linguistique du corpus (lots a–c) et amendement des questions —
+**SUCCÈS INTÉGRAL sur les deux questions** (Q1 : critères A et B vrais,
+`User [MODEL]` au rang 3 ; Q2 : critères A et B vrais, `get_db` au
+rang 1) — premier relevé du jalon où les quatre critères sont vrais ;
+**exécution arrêtée après R4** conformément au séquencement (CLAUDE.md
+§4 ter), verdict de clôture du jalon au mainteneur
 
 > **Le constat est le livrable.** Un échec proprement documenté vaut
 > mieux qu'un succès arrangé — c'est toute la raison d'être du jalon
@@ -328,6 +328,79 @@ competes against full code chunks whose docstrings state deletion
 policies verbatim in French. Language migration of the corpus (CLAUDE.md
 §4 ter) is the next governed variable — R4 will measure it.
 
+### Relevé R4 — 2026-08-28 (`python -m scripts.rag_probe`, corpus et questions anglais)
+
+**Corrections appliquées avant R4** (politique de langue CLAUDE.md
+§4 ter, séquencement étapes 2–3) : migration linguistique du corpus
+indexable en trois lots gatés — (a) synthèses générées en anglais, clé
+`synthesis` (commit `04aa776`) ; (b) docstrings et postconditions
+`[STEP]` de `app/` réécrites en anglais, 140 tests inchangés (commit
+`e5f5a12`) ; (c) `CONTRACTS.md` traduit (commit `4477bca`) — puis
+questions traduites par amendement de protocole (commit `3106b91`).
+Modèle, préfixes, k, échantillon et chunking hérités de R3, inchangés.
+Inventaire inchangé : 19 chunks, mêmes identifiants.
+
+**Q1 — « what happens when a user is deleted? »**
+
+| Rang | Score | Chunk |
+|---|---|---|
+| 1 | 0.8327 | `users.router.delete_user [RAG]` |
+| 2 | 0.8056 | `users.services.delete_user [RAG]` |
+| 3 | 0.8049 | `users.models.User [MODEL]` |
+| 4 | 0.8017 | `users.services.get_user [RAG]` |
+| 5 | 0.7963 | `users.router.create_user [RAG]` |
+
+Aucune égalité à 4 décimales.
+Critère A : **VRAI** (rang 2). Critère B : **VRAI** —
+`users.models.User [MODEL]` au rang **3**, à 0.0007 du rang 2.
+
+**Q2 — « how does an HTTP request obtain a database session? »**
+
+| Rang | Score | Chunk |
+|---|---|---|
+| 1 | 0.8601 | `core.database.get_db [RAG]` |
+| 2 | 0.8298 | `users.router.get_user [RAG]` |
+| 3 | 0.8253 | `users.services.get_user [RAG]` |
+| 4 | 0.8174 | `organizations.services.get_organization [RAG]` |
+| 5 | 0.8139 | `users.router.list_users [RAG]` |
+
+Aucune égalité à 4 décimales.
+Critère A : **VRAI** (rang 1, marge +0.0303 sur le rang 2). Critère B :
+**VRAI** (rangs 2 et 5).
+
+**Verdict R4 : SUCCÈS INTÉGRAL — les quatre critères binaires des deux
+questions sont vrais, pour la première fois du jalon.** Trajectoires
+complètes des deux attendus historiquement défaillants :
+
+- Q1-B, `users.models.User [MODEL]` : hors top-5 (R1) → rang 9 (R2) →
+  rang 6 à 0.0018 du seuil (R3) → **rang 3** (R4) — chaque boucle
+  gouvernée (format J10/J11, modèle piste 4, langue §4 ter) a produit
+  un gain monotone, et c'est l'**alignement de langue corpus/question**
+  qui franchit le seuil ;
+- Q2-A, `core.database.get_db [RAG]` : hors top-5 (R1) → rang 6 (R2) →
+  rang 1 (R3) → **rang 1 confirmé** (R4) — le gain venait du modèle à
+  fenêtre longue (R3), la migration de langue le préserve.
+
+L'effet de langue mesuré à variables gelées (R3 → R4, même modèle,
+même k, même échantillon) est la **donnée d'enseignement pour la
+phase 5** : corpus et questions dans la même langue à haute ressource.
+
+### [DIAGNOSTIC] 2026-08-28 — R4 measurement notes (English, per protocol §1)
+
+Full-ranking positions (19 chunks): Q1 → `User [MODEL]` **3rd**
+(0.8049, gap to 2nd = 0.0007, margin over 4th = 0.0032), `get_db` 15th;
+Q2 → `get_db` **1st** (0.8601, margin +0.0303 over 2nd),
+`User [MODEL]` 16th (properly low — no session semantics),
+`init_db_engine` 12th. Q1's top-3 now reads as the ideal answer set:
+the deletion endpoint, the deletion service (holding both 409 policies
+and the SET NULL rule in its docstring), and the entity block whose
+generated synthesis states every inbound edge policy. Language
+alignment (English corpus + English query) is what moved `User [MODEL]`
+across the threshold: the R3→R4 delta isolates it under otherwise
+frozen variables. Both improvements are additive and stable across
+rounds: window capacity (R3) fixed Q2-A; language alignment (R4) fixed
+Q1-B without regressing Q2.
+
 ### Suite (gouvernance)
 
 La boucle de format (pistes 2–3) a produit un progrès mesurable mais
@@ -347,6 +420,13 @@ puis l'amendement des questions du jalon (la langue des questions suit
 celle du corpus) et le **relevé R4** — arrêt après R4, verdict quel
 qu'il soit. R1–R3 restent intacts au constat ; la comparaison R3 → R4
 documentera l'effet de langue pour la phase 5.
+
+**Addendum post-R4 (2026-08-28)** : le séquencement de §4 ter est
+intégralement exécuté — R3, lots a–c, amendement des questions, R4.
+**R4 est en succès intégral** (quatre critères vrais) ; conformément à
+l'instruction, **l'exécution s'arrête ici**. La clôture du jalon 13
+(gate, mise à jour de CLAUDE.md §8) est une décision du mainteneur, sur
+la foi du présent constat.
 
 ### Pistes de correction possibles (identifiées à R1 — NON exécutées alors, statut mis à jour)
 

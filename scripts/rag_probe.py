@@ -14,7 +14,9 @@ est une matrice numpy en mémoire.
 Depuis le relevé R3 (décision de gouvernance du 2026-08-28, piste 4) :
 modèle ``intfloat/multilingual-e5-large`` avec les préfixes d'usage e5
 ``query:``/``passage:`` appliqués côté sonde — le corpus sur disque est
-inchangé.
+inchangé. Depuis le relevé R4 (amendement de protocole, CLAUDE.md
+§4 ter) : questions en anglais — la langue des questions suit celle du
+corpus, migré aux lots a–c.
 
 La qualification des modules réutilise celle du module d'analyse
 partagé (une seule définition de la notion).
@@ -45,8 +47,8 @@ PASSAGE_PREFIX: str = "passage: "
 QUERY_PREFIX: str = "query: "
 
 QUESTIONS: tuple[tuple[str, str], ...] = (
-    ("Q1", "que se passe-t-il quand on supprime un utilisateur ?"),
-    ("Q2", "comment une requête HTTP obtient-elle une session de base de données ?"),
+    ("Q1", "what happens when a user is deleted?"),
+    ("Q2", "how does an HTTP request obtain a database session?"),
 )
 
 SAMPLE_FILES: tuple[str, ...] = (
