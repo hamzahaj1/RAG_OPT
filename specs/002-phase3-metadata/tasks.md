@@ -170,12 +170,14 @@ cross-domaines ; sinon, corriger le format **avant** toute généralisation.
 **Independent Test** : vectoriser l'échantillon, poser les 2 questions,
 constater les attendus dans le top-k, documenter le constat.
 
-**Échantillon figé** : `app/domains/users/services.py`,
-`app/domains/organizations/services.py`, `app/core/database.py` (minimum
-FR-015 — intégralement annoté depuis l'extension du périmètre `[RAG]`),
-**plus** `app/domains/users/router.py` — 4ᵉ fichier admis par FR-015
-(« au moins trois »), requis pour que Q2 puisse remonter un chunk
-d'endpoint montrant `Depends(get_db)`.
+**Échantillon figé (5 fichiers — protocole du constat, 2026-08-28)** :
+`app/domains/users/services.py`, `app/domains/organizations/services.py`,
+`app/core/database.py` (minimum FR-015 — intégralement annoté depuis
+l'extension du périmètre `[RAG]`), **plus** `app/domains/users/router.py`
+(4ᵉ fichier, requis pour que Q2 puisse remonter un chunk d'endpoint
+montrant `Depends(get_db)`) **et** `app/domains/users/models.py`
+(5ᵉ fichier, amendement du protocole : le format `[MODEL]` doit être
+éprouvé, et le bloc users est le chunk d'arêtes le plus riche).
 
 **Questions de contrôle figées** :
 
