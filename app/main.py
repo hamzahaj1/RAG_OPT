@@ -1,10 +1,10 @@
 # [FILE] — app/main.py
-"""Assemblage de l'application FastAPI et cycle de vie de la base.
+"""FastAPI application assembly and database lifecycle.
 
-Point d'entrée unique du backend : les routeurs de domaines (Phase 2) se
-montent dans ``create_app``, nulle part ailleurs. Le schéma est synchronisé
-au démarrage pour le développement ; Alembic reste l'outil de référence
-pour les migrations (Jalon 3).
+Single entry point of the backend: domain routers (Phase 2) are mounted
+in ``create_app``, nowhere else. The schema is synchronized at startup
+for development; Alembic remains the reference tool for migrations
+(Milestone 3).
 """
 
 # ─── IMPORTS ───
@@ -41,17 +41,17 @@ logger = logging.getLogger(__name__)
 # called_by: none
 # [/RAG]
 def create_app() -> FastAPI:
-    """Construit l'application FastAPI complète.
+    """Builds the complete FastAPI application.
 
-    Règles :
-    - le cycle de vie DB passe exclusivement par ``lifespan`` ;
-    - chaque domaine (Phase 2) monte son routeur ici, nulle part ailleurs.
+    Rules:
+    - the DB lifecycle goes exclusively through ``lifespan``;
+    - each domain (Phase 2) mounts its router here, nowhere else.
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     app: FastAPI
     # ─────────────────────────────────────────
 
-    # [STEP 1] Instancier FastAPI avec le lifespan → cycle de vie DB branché
+    # [STEP 1] Instantiate FastAPI with the lifespan → DB lifecycle wired
     app = FastAPI(
         debug=settings.debug,
         lifespan=lifespan,
@@ -59,17 +59,17 @@ def create_app() -> FastAPI:
         version="0.1.0",
     )
 
-    # [STEP 2] Monter les routeurs de domaines → endpoints /api/v1 actifs
+    # [STEP 2] Mount the domain routers → /api/v1 endpoints active
     app.include_router(comments_router, prefix="/api/v1")
     app.include_router(organizations_router, prefix="/api/v1")
     app.include_router(projects_router, prefix="/api/v1")
     app.include_router(tasks_router, prefix="/api/v1")
     app.include_router(users_router, prefix="/api/v1")
 
-    # [STEP 3] Exposer la sonde de santé → l'app est vérifiable sans toucher la DB
+    # [STEP 3] Expose the health probe → the app is checkable without touching the DB
     @app.get("/health")
     async def health_check() -> dict[str, str]:
-        """Sonde de vivacité : ne touche pas la base, répond toujours."""
+        """Liveness probe: never touches the database, always responds."""
         return {"status": "ok"}
 
     return app
@@ -86,32 +86,33 @@ def create_app() -> FastAPI:
 # [/RAG]
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """Démarrage et arrêt propres des ressources DB.
+    """Clean startup and shutdown of DB resources.
 
-    Invariants :
-    - la factory de sessions est liée au moteur avant la première requête ;
-    - le moteur est libéré à l'arrêt, aucune connexion ne fuit.
+    Invariants:
+    - the session factory is bound to the engine before the first
+      request;
+    - the engine is disposed at shutdown, no connection leaks.
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     engine: AsyncEngine
     # ─────────────────────────────────────────
 
-    # [STEP 1] Créer le moteur async → DSN résolu depuis settings
+    # [STEP 1] Create the async engine → DSN resolved from settings
     engine = init_db_engine()
 
-    # [STEP 2] Lier la factory de sessions → get_db délivre des sessions de ce moteur
+    # [STEP 2] Bind the session factory → get_db delivers sessions from this engine
     async_session_factory.configure(bind=engine)
 
-    # [STEP 3] Synchroniser le schéma (dev uniquement) → tables des modèles présentes
+    # [STEP 3] Synchronize the schema (dev only) → model tables present
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)
-    logger.info("Base de données prête.")
+    logger.info("Database ready.")
 
     yield
 
-    # [STEP 4] Libérer le moteur → toutes les connexions fermées
+    # [STEP 4] Dispose the engine → all connections closed
     await engine.dispose()
-    logger.info("Moteur de base de données libéré.")
+    logger.info("Database engine disposed.")
 
 
 app = create_app()

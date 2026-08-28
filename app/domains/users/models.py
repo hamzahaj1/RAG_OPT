@@ -9,12 +9,12 @@
 # referenced_by: comments.author_id -> RESTRICT, organizations.owner_id -> RESTRICT,
 #   tasks.assignee_id -> SET NULL
 # [/MODEL]
-"""Modèle SQLAlchemy du domaine users.
+"""SQLAlchemy model of the users domain.
 
-Socle relationnel de la plateforme : les organisations (propriétaire),
-les tâches (assigné) et les commentaires (auteur) référencent ``users.id``
-par FK explicite — aucune navigation ORM inter-domaines (pas de
-``relationship()`` en Phase 2).
+Relational bedrock of the platform: organizations (owner), tasks
+(assignee) and comments (author) reference ``users.id`` through
+explicit FKs — no cross-domain ORM navigation (no ``relationship()``
+in Phase 2).
 """
 
 # ─── IMPORTS ───
@@ -32,20 +32,20 @@ from app.core.database import Base
 
 
 class UserRole(str, Enum):
-    """Ensemble fermé des rôles utilisateur — persisté en ``String`` + CHECK (D1)."""
+    """Closed set of user roles — persisted as ``String`` + CHECK (D1)."""
 
     ADMIN = "admin"
     MEMBER = "member"
 
 
 class User(Base):
-    """Compte utilisateur de la plateforme.
+    """User account of the platform.
 
-    Invariants :
-    - ``email`` est unique sur toute la plateforme (index unique) ;
-    - ``hashed_password`` ne contient jamais un mot de passe en clair et
-      n'est exposé par aucun schéma de réponse ;
-    - ``role`` est borné au périmètre de ``UserRole`` par CHECK nommé.
+    Invariants:
+    - ``email`` is unique across the whole platform (unique index);
+    - ``hashed_password`` never contains a cleartext password and is
+      exposed by no response schema;
+    - ``role`` is bounded to the ``UserRole`` set by a named CHECK.
     """
 
     __tablename__ = "users"

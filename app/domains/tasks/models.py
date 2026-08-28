@@ -7,14 +7,14 @@
 # fks: assignee_id -> users.id [SET NULL], project_id -> projects.id [CASCADE]
 # referenced_by: comments.task_id -> CASCADE
 # [/MODEL]
-"""Modèle SQLAlchemy du domaine tasks.
+"""SQLAlchemy model of the tasks domain.
 
-Premier domaine à double référence inter-domaines : ``project_id``
-référence ``projects.id`` en ``ondelete=CASCADE`` (la suppression d'un
-projet emporte ses tâches — axe de contenance, DB seule) ; ``assignee_id``
-référence ``users.id`` en ``ondelete=SET NULL`` (la suppression d'un
-utilisateur désassigne ses tâches sans les détruire — DB seule, D2).
-Aucune navigation ORM inter-domaines (pas de ``relationship()`` en
+First domain with a double cross-domain reference: ``project_id``
+references ``projects.id`` with ``ondelete=CASCADE`` (deleting a
+project takes its tasks with it — containment axis, DB alone);
+``assignee_id`` references ``users.id`` with ``ondelete=SET NULL``
+(deleting a user unassigns their tasks without destroying them — DB
+alone, D2). No cross-domain ORM navigation (no ``relationship()`` in
 Phase 2).
 """
 
@@ -33,7 +33,7 @@ from app.core.database import Base
 
 
 class TaskPriority(str, Enum):
-    """Ensemble fermé des priorités de tâche — persisté en ``String`` + CHECK (D1)."""
+    """Closed set of task priorities — persisted as ``String`` + CHECK (D1)."""
 
     LOW = "low"
     MEDIUM = "medium"
@@ -41,7 +41,7 @@ class TaskPriority(str, Enum):
 
 
 class TaskStatus(str, Enum):
-    """Ensemble fermé des statuts de tâche — persisté en ``String`` + CHECK (D1)."""
+    """Closed set of task statuses — persisted as ``String`` + CHECK (D1)."""
 
     TODO = "todo"
     IN_PROGRESS = "in_progress"
@@ -49,17 +49,17 @@ class TaskStatus(str, Enum):
 
 
 class Task(Base):
-    """Tâche rattachée à un projet, assignable à un utilisateur.
+    """Task attached to a project, assignable to a user.
 
-    Invariants :
-    - ``project_id`` pointe toujours vers un projet existant : vérifié
-      par le service (404 à l'écriture) et par la FK ``CASCADE`` — la
-      suppression du projet emporte la tâche (jamais l'inverse) ;
-    - ``assignee_id`` est la seule FK nullable de la phase : ``NULL``
-      signifie « non assignée » ; la suppression de l'assigné remet
-      ``NULL`` par la DB seule (``SET NULL``, D2) ;
-    - ``status`` et ``priority`` sont bornés à leurs enums par CHECK
-      nommés ; ``description`` n'est jamais NULL (chaîne vide par défaut).
+    Invariants:
+    - ``project_id`` always points to an existing project: checked by
+      the service (404 on write) and by the ``CASCADE`` FK — deleting
+      the project takes the task with it (never the reverse);
+    - ``assignee_id`` is the only nullable FK of the phase: ``NULL``
+      means "unassigned"; deleting the assignee resets ``NULL`` by the
+      DB alone (``SET NULL``, D2);
+    - ``status`` and ``priority`` are bounded to their enums by named
+      CHECKs; ``description`` is never NULL (empty string by default).
     """
 
     __tablename__ = "tasks"

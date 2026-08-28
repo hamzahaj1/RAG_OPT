@@ -1,13 +1,13 @@
 # [FILE] — app/domains/comments/services.py
-"""Logique métier du domaine comments.
+"""Business logic of the comments domain.
 
-Porte toutes les règles du domaine — les routeurs restent des wrappers
-minces : existence de la tâche et de l'auteur vérifiée par SELECT avant
-toute écriture (404 nommant l'entité manquante, première couche de D2 —
-les FK ``CASCADE``/``RESTRICT`` sont le backstop), liste toujours filtrée
-par tâche existante (``task_id`` obligatoire, FR-021), 404 nommant
-l'entité et l'id. Une écriture par requête HTTP : ``commit`` puis
-``refresh`` ici, jamais dans les routeurs.
+Carries every rule of the domain — routers remain thin wrappers:
+existence of the task and of the author checked by SELECT before any
+write (404 naming the missing entity, first layer of D2 — the
+``CASCADE``/``RESTRICT`` FKs are the backstop), listing always filtered
+by an existing task (``task_id`` required, FR-021), 404 naming the
+entity and the id. One write per HTTP request: ``commit`` then
+``refresh`` here, never in the routers.
 """
 
 # ─── IMPORTS ───
@@ -38,15 +38,15 @@ from app.domains.users.models import User
 # called_by: comments.router.create_comment, scripts.seed._ensure_comment
 # [/RAG]
 async def create_comment(db: AsyncSession, data: CommentCreate) -> Comment:
-    """Crée un commentaire.
+    """Creates a comment.
 
-    Règles métier :
-    - la tâche doit exister : SELECT sur ``tasks`` avant toute écriture
-      → 404 « Task {id} not found » (D2) ;
-    - l'auteur doit exister : SELECT sur ``users`` avant toute écriture
-      → 404 « User {id} not found » (D2) ;
-    - la tâche et l'auteur sont fixés à la création — aucun des deux
-      n'est modifiable ensuite (Phase 2).
+    Business rules:
+    - the task must exist: SELECT on ``tasks`` before any write → 404
+      "Task {id} not found" (D2);
+    - the author must exist: SELECT on ``users`` before any write → 404
+      "User {id} not found" (D2);
+    - the task and the author are fixed at creation — neither is
+      modifiable afterwards (Phase 2).
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     author: User | None
@@ -54,17 +54,17 @@ async def create_comment(db: AsyncSession, data: CommentCreate) -> Comment:
     task: Task | None
     # ─────────────────────────────────────────
 
-    # [STEP 1] Vérifier l'existence de la tâche → aucune FK orpheline ne sera écrite
+    # [STEP 1] Check the task's existence → no orphan FK will be written
     task = await db.get(Task, data.task_id)
     if task is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"Task {data.task_id} not found")
 
-    # [STEP 2] Vérifier l'existence de l'auteur → attribution valide garantie
+    # [STEP 2] Check the author's existence → valid attribution guaranteed
     author = await db.get(User, data.author_id)
     if author is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"User {data.author_id} not found")
 
-    # [STEP 3] Persister et rafraîchir → id et horodatages serveur résolus
+    # [STEP 3] Persist and refresh → id and server timestamps resolved
     comment = Comment(
         author_id=data.author_id,
         content=data.content,
@@ -86,21 +86,21 @@ async def create_comment(db: AsyncSession, data: CommentCreate) -> Comment:
 # called_by: comments.router.delete_comment
 # [/RAG]
 async def delete_comment(db: AsyncSession, comment_id: int) -> None:
-    """Supprime un commentaire.
+    """Deletes a comment.
 
-    Règles métier :
-    - id inconnu → 404, aucune écriture ;
-    - feuille du graphe : aucune table ne référence ``comments``, la
-      suppression est un DELETE simple sans vérification aval (D7).
+    Business rules:
+    - unknown id → 404, no write;
+    - leaf of the graph: no table references ``comments``, the deletion
+      is a plain DELETE with no downstream check (D7).
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     comment: Comment
     # ─────────────────────────────────────────
 
-    # [STEP 1] Charger le commentaire cible → 404 si absent
+    # [STEP 1] Load the target comment → 404 if absent
     comment = await get_comment(db, comment_id)
 
-    # [STEP 2] Supprimer et valider → la ligne n'existe plus
+    # [STEP 2] Delete and commit → the row no longer exists
     await db.delete(comment)
     await db.commit()
 
@@ -116,20 +116,20 @@ async def delete_comment(db: AsyncSession, comment_id: int) -> None:
 #   comments.services.update_comment
 # [/RAG]
 async def get_comment(db: AsyncSession, comment_id: int) -> Comment:
-    """Consulte un commentaire par identifiant.
+    """Fetches a comment by identifier.
 
-    Règles métier :
-    - id inconnu → 404 nommant l'entité et l'id (« Comment 42 not
-      found »), format d'erreur commun aux cinq domaines (FR-003).
+    Business rules:
+    - unknown id → 404 naming the entity and the id ("Comment 42 not
+      found"), error format shared by the five domains (FR-003).
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     comment: Comment | None
     # ─────────────────────────────────────────
 
-    # [STEP 1] Charger par clé primaire → comment chargé ou None
+    # [STEP 1] Load by primary key → comment loaded or None
     comment = await db.get(Comment, comment_id)
 
-    # [STEP 2] Refuser l'absence → la sortie est garantie non nulle
+    # [STEP 2] Refuse absence → the output is guaranteed non-null
     if comment is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"Comment {comment_id} not found")
     return comment
@@ -148,28 +148,27 @@ async def get_comment(db: AsyncSession, comment_id: int) -> Comment:
 async def list_comments(
     db: AsyncSession, limit: int, offset: int, task_id: int
 ) -> Sequence[Comment]:
-    """Liste les commentaires d'une tâche par page.
+    """Lists the comments of a task by page.
 
-    Règles métier :
-    - ``task_id`` est obligatoire et la tâche doit exister → 404
-      « Task {id} not found » — jamais de liste globale de commentaires
-      (FR-021) ;
-    - seuls les commentaires de la tâche demandée sont restitués ;
-    - tri par id croissant : pagination stable et déterministe (D9) ;
-    - bornes (1 ≤ limit ≤ 100, offset ≥ 0) validées en amont par le
-      routeur — une liste vide est une réponse valide, pas une erreur.
+    Business rules:
+    - ``task_id`` is required and the task must exist → 404 "Task {id}
+      not found" — never a global list of comments (FR-021);
+    - only the comments of the requested task are returned;
+    - sorted by ascending id: stable, deterministic pagination (D9);
+    - bounds (1 ≤ limit ≤ 100, offset ≥ 0) validated upstream by the
+      router — an empty list is a valid response, not an error.
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     comments: Sequence[Comment]
     task: Task | None
     # ─────────────────────────────────────────
 
-    # [STEP 1] Vérifier l'existence de la tâche → le filtre pointe une tâche réelle
+    # [STEP 1] Check the task's existence → the filter points to a real task
     task = await db.get(Task, task_id)
     if task is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"Task {task_id} not found")
 
-    # [STEP 2] Charger la page demandée → commentaires de la tâche seule, tri par id
+    # [STEP 2] Load the requested page → comments of that task only, sorted by id
     comments = (
         await db.scalars(
             select(Comment)
@@ -192,13 +191,13 @@ async def list_comments(
 # called_by: comments.router.update_comment
 # [/RAG]
 async def update_comment(db: AsyncSession, comment_id: int, data: CommentUpdate) -> Comment:
-    """Modifie partiellement un commentaire.
+    """Partially updates a comment.
 
-    Règles métier :
-    - sémantique ``exclude_unset`` : seul un ``content`` présent dans le
-      corps change — la tâche et l'auteur ne sont jamais modifiables
-      (Phase 2) ;
-    - id inconnu → 404.
+    Business rules:
+    - ``exclude_unset`` semantics: only a ``content`` present in the
+      body changes — the task and the author are never modifiable
+      (Phase 2);
+    - unknown id → 404.
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     comment: Comment
@@ -207,13 +206,13 @@ async def update_comment(db: AsyncSession, comment_id: int, data: CommentUpdate)
     value: Any
     # ─────────────────────────────────────────
 
-    # [STEP 1] Charger le commentaire cible → 404 si absent
+    # [STEP 1] Load the target comment → 404 if absent
     comment = await get_comment(db, comment_id)
 
-    # [STEP 2] Extraire les champs réellement fournis → PATCH partiel fidèle
+    # [STEP 2] Extract the fields actually provided → faithful partial PATCH
     update_data = data.model_dump(exclude_unset=True)
 
-    # [STEP 3] Appliquer les champs et persister → horodatage de modification rafraîchi
+    # [STEP 3] Apply the fields and persist → modification timestamp refreshed
     for field, value in update_data.items():
         setattr(comment, field, value)
     await db.commit()

@@ -1,10 +1,10 @@
 # [FILE] — app/core/config.py
-"""Configuration applicative lue depuis l'environnement.
+"""Application configuration read from the environment.
 
-Seule source de configuration du projet : tout module qui a besoin d'un
-paramètre importe le singleton ``settings`` — jamais ``os.environ``.
-Les valeurs par défaut ciblent le développement local et sont écrasées
-par ``.env`` puis par les variables d'environnement réelles.
+The project's single source of configuration: any module that needs a
+setting imports the ``settings`` singleton — never ``os.environ``.
+Default values target local development and are overridden by ``.env``
+then by the real environment variables.
 """
 
 # ─── IMPORTS ───
@@ -16,13 +16,13 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Paramètres de l'application.
+    """Application settings.
 
-    Invariants :
-    - ``database_url`` doit rester cohérent avec les trois variables
-      ``postgres_*`` (même utilisateur, même mot de passe, même base) ;
-    - ``database_url`` utilise le driver ``postgresql+asyncpg`` : le projet
-      n'ouvre aucune connexion synchrone.
+    Invariants:
+    - ``database_url`` must stay consistent with the three ``postgres_*``
+      variables (same user, same password, same database);
+    - ``database_url`` uses the ``postgresql+asyncpg`` driver: the
+      project opens no synchronous connection.
     """
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)

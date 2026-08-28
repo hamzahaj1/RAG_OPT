@@ -5,15 +5,15 @@
 # schemas: TaskBase(BaseModel), TaskCreate(TaskBase), TaskRead(TaskBase), TaskUpdate(BaseModel)
 # entity: Task
 # [/SCHEMA]
-"""Schémas Pydantic du domaine tasks.
+"""Pydantic schemas of the tasks domain.
 
-Données pures, sans logique ni méthode : quatre classes (Base, Create,
-Read, Update) en ordre alphabétique. ``project_id`` n'apparaît que sur
-Create et Read — le projet n'est pas modifiable en Phase 2 ; ``assignee_id``
-est le seul parent modifiable de la phase : présent sur Update, où un
-``null`` explicite désassigne tandis qu'un champ absent ne change rien
-(sémantique ``exclude_unset``). Les longueurs maximales sont alignées sur
-les colonnes de ``models.py``.
+Pure data, no logic and no methods: four classes (Base, Create, Read,
+Update) in alphabetical order. ``project_id`` only appears on Create
+and Read — the project is not modifiable in Phase 2; ``assignee_id`` is
+the only modifiable parent of the phase: present on Update, where an
+explicit ``null`` unassigns while an absent field changes nothing
+(``exclude_unset`` semantics). Maximum lengths are aligned with the
+``models.py`` columns.
 """
 
 # ─── IMPORTS ───
@@ -29,7 +29,7 @@ from app.domains.tasks.models import TaskPriority, TaskStatus
 
 
 class TaskBase(BaseModel):
-    """Champs communs aux écritures et aux lectures d'une tâche."""
+    """Fields shared by task writes and reads."""
 
     description: str = ""
     priority: TaskPriority
@@ -38,14 +38,14 @@ class TaskBase(BaseModel):
 
 
 class TaskCreate(TaskBase):
-    """Corps de POST — champs communs plus le projet (fixé) et l'assigné optionnel."""
+    """POST body — shared fields plus the project (fixed) and the optional assignee."""
 
     assignee_id: int | None = None
     project_id: int
 
 
 class TaskRead(TaskBase):
-    """Réponse API — état complet, projet, assigné éventuel et horodatages."""
+    """API response — full state, project, optional assignee and timestamps."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -57,10 +57,10 @@ class TaskRead(TaskBase):
 
 
 class TaskUpdate(BaseModel):
-    """Corps de PATCH — tous champs optionnels, sémantique ``exclude_unset``.
+    """PATCH body — all fields optional, ``exclude_unset`` semantics.
 
-    ``assignee_id`` distingue trois cas : champ absent (pas de
-    changement), ``null`` explicite (désassignation), entier (assignation).
+    ``assignee_id`` distinguishes three cases: absent field (no
+    change), explicit ``null`` (unassignment), integer (assignment).
     """
 
     assignee_id: int | None = None

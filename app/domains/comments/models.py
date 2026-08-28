@@ -7,15 +7,15 @@
 # fks: author_id -> users.id [RESTRICT], task_id -> tasks.id [CASCADE]
 # referenced_by: none
 # [/MODEL]
-"""Modèle SQLAlchemy du domaine comments.
+"""SQLAlchemy model of the comments domain.
 
-Dernier maillon du graphe relationnel, relation la plus imbriquée :
-``task_id`` référence ``tasks.id`` en ``ondelete=CASCADE`` (la suppression
-d'une tâche emporte ses commentaires — fin de l'axe de contenance
-projects → tasks → comments, DB seule) ; ``author_id`` référence
-``users.id`` en ``ondelete=RESTRICT`` (un auteur de commentaires ne peut
-pas être supprimé — backstop DB du 409 applicatif, D2). Aucune navigation
-ORM inter-domaines (pas de ``relationship()`` en Phase 2).
+Last link of the relational graph, the most nested relation:
+``task_id`` references ``tasks.id`` with ``ondelete=CASCADE`` (deleting
+a task takes its comments with it — end of the containment axis
+projects → tasks → comments, DB alone); ``author_id`` references
+``users.id`` with ``ondelete=RESTRICT`` (a comment author cannot be
+deleted — DB backstop of the application-level 409, D2). No
+cross-domain ORM navigation (no ``relationship()`` in Phase 2).
 """
 
 # ─── IMPORTS ───
@@ -32,18 +32,18 @@ from app.core.database import Base
 
 
 class Comment(Base):
-    """Commentaire rattaché à une tâche, écrit par un utilisateur.
+    """Comment attached to a task, written by a user.
 
-    Invariants :
-    - ``task_id`` pointe toujours vers une tâche existante : vérifié par
-      le service (404 à l'écriture) et par la FK ``CASCADE`` — la
-      suppression de la tâche emporte le commentaire (jamais l'inverse) ;
-    - ``author_id`` pointe toujours vers un utilisateur existant : vérifié
-      par le service (404 à l'écriture) ; la suppression de l'auteur est
-      refusée tant que le commentaire existe (409 applicatif, FK
-      ``RESTRICT`` en backstop — D2) ;
-    - ni la tâche ni l'auteur ne sont modifiables après création
-      (Phase 2) ; ``content`` n'est jamais NULL.
+    Invariants:
+    - ``task_id`` always points to an existing task: checked by the
+      service (404 on write) and by the ``CASCADE`` FK — deleting the
+      task takes the comment with it (never the reverse);
+    - ``author_id`` always points to an existing user: checked by the
+      service (404 on write); deleting the author is refused as long as
+      the comment exists (application-level 409, ``RESTRICT`` FK as
+      backstop — D2);
+    - neither the task nor the author is modifiable after creation
+      (Phase 2); ``content`` is never NULL.
     """
 
     __tablename__ = "comments"

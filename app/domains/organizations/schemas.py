@@ -7,12 +7,12 @@
 #   OrganizationRead(OrganizationBase), OrganizationUpdate(BaseModel)
 # entity: Organization
 # [/SCHEMA]
-"""Schémas Pydantic du domaine organizations.
+"""Pydantic schemas of the organizations domain.
 
-Données pures, sans logique ni méthode : quatre classes (Base, Create,
-Read, Update) en ordre alphabétique. ``owner_id`` n'apparaît que sur
-Create et Read — le propriétaire n'est pas modifiable en Phase 2 ; les
-longueurs maximales sont alignées sur les colonnes de ``models.py``.
+Pure data, no logic and no methods: four classes (Base, Create, Read,
+Update) in alphabetical order. ``owner_id`` only appears on Create and
+Read — the owner is not modifiable in Phase 2; maximum lengths are
+aligned with the ``models.py`` columns.
 """
 
 # ─── IMPORTS ───
@@ -26,19 +26,19 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class OrganizationBase(BaseModel):
-    """Champs communs aux écritures et aux lectures d'une organisation."""
+    """Fields shared by organization writes and reads."""
 
     name: str = Field(max_length=100)
 
 
 class OrganizationCreate(OrganizationBase):
-    """Corps de POST — champs communs plus le propriétaire, fixé à la création."""
+    """POST body — shared fields plus the owner, fixed at creation."""
 
     owner_id: int
 
 
 class OrganizationRead(OrganizationBase):
-    """Réponse API — état complet, propriétaire et horodatages inclus."""
+    """API response — full state, owner and timestamps included."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -49,6 +49,6 @@ class OrganizationRead(OrganizationBase):
 
 
 class OrganizationUpdate(BaseModel):
-    """Corps de PATCH — seul ``name`` est modifiable, sémantique ``exclude_unset``."""
+    """PATCH body — only ``name`` is modifiable, ``exclude_unset`` semantics."""
 
     name: str | None = Field(default=None, max_length=100)

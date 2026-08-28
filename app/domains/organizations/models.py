@@ -7,12 +7,12 @@
 # fks: owner_id -> users.id [RESTRICT]
 # referenced_by: projects.organization_id -> RESTRICT
 # [/MODEL]
-"""Modèle SQLAlchemy du domaine organizations.
+"""SQLAlchemy model of the organizations domain.
 
-Première relation inter-domaines du projet : ``owner_id`` référence
-``users.id`` en ``ondelete=RESTRICT`` — la DB refuse la suppression d'un
-propriétaire, en backstop du 409 applicatif (D2). Aucune navigation ORM
-inter-domaines (pas de ``relationship()`` en Phase 2).
+First cross-domain relation of the project: ``owner_id`` references
+``users.id`` with ``ondelete=RESTRICT`` — the DB refuses to delete an
+owner, as the backstop of the application-level 409 (D2). No
+cross-domain ORM navigation (no ``relationship()`` in Phase 2).
 """
 
 # ─── IMPORTS ───
@@ -29,13 +29,13 @@ from app.core.database import Base
 
 
 class Organization(Base):
-    """Organisation propriétaire de projets.
+    """Organization owning projects.
 
-    Invariants :
-    - ``name`` est unique sur toute la plateforme (contrainte unique) ;
-    - ``owner_id`` pointe toujours vers un utilisateur existant : vérifié
-      par le service (404 à l'écriture) et par la FK ``RESTRICT`` (D2) ;
-    - le propriétaire n'est pas modifiable en Phase 2 (absent des Update).
+    Invariants:
+    - ``name`` is unique across the whole platform (unique constraint);
+    - ``owner_id`` always points to an existing user: checked by the
+      service (404 on write) and by the ``RESTRICT`` FK (D2);
+    - the owner is not modifiable in Phase 2 (absent from Update).
     """
 
     __tablename__ = "organizations"

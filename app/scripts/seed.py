@@ -1,17 +1,17 @@
 # [FILE] — app/scripts/seed.py
-"""Seed idempotent de la base de développement (Jalon 9, SC-004).
+"""Idempotent seed of the development database (Milestone 9, SC-004).
 
-Peuple les cinq domaines dans l'ordre du graphe
-(users → organizations → projects → tasks → comments) par get-or-create
-sur les clés naturelles de D11 : ``users.email`` → ``organizations.name``
-→ ``projects(organization, name)`` → ``tasks(project, title)`` →
-``comments(task, author, content)``. Deux exécutions successives
-produisent exactement le même état — zéro doublon, zéro erreur. La
-création délègue aux services de domaines (double couche D2 conservée) ;
-le jeu de données constant couvre les 6 arêtes FK, les 2 rôles, les
-3 statuts, les 3 priorités, des tâches assignées et non assignées et
-≥2 commentaires sur une même tâche. Exécutable :
-``python -m app.scripts.seed`` (cible ``make db-seed``).
+Populates the five domains in graph order
+(users → organizations → projects → tasks → comments) by get-or-create
+on the D11 natural keys: ``users.email`` → ``organizations.name`` →
+``projects(organization, name)`` → ``tasks(project, title)`` →
+``comments(task, author, content)``. Two successive runs produce
+exactly the same state — zero duplicates, zero errors. Creation
+delegates to the domain services (D2 double layer preserved); the
+constant dataset covers the 6 FK edges, the 2 roles, the 3 statuses,
+the 3 priorities, assigned and unassigned tasks and ≥2 comments on a
+same task. Executable: ``python -m app.scripts.seed`` (target
+``make db-seed``).
 """
 
 # ─── IMPORTS ───
@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 
 
 class SeedComment(TypedDict):
-    """Entrée du jeu de données commentaires — clé naturelle (task, author, content)."""
+    """Comments dataset entry — natural key (task, author, content)."""
 
     author_email: str
     content: str
@@ -55,14 +55,14 @@ class SeedComment(TypedDict):
 
 
 class SeedOrganization(TypedDict):
-    """Entrée du jeu de données organisations — clé naturelle ``name``."""
+    """Organizations dataset entry — natural key ``name``."""
 
     name: str
     owner_email: str
 
 
 class SeedProject(TypedDict):
-    """Entrée du jeu de données projets — clé naturelle (organization, name)."""
+    """Projects dataset entry — natural key (organization, name)."""
 
     description: str
     name: str
@@ -70,7 +70,7 @@ class SeedProject(TypedDict):
 
 
 class SeedTask(TypedDict):
-    """Entrée du jeu de données tâches — clé naturelle (project, title)."""
+    """Tasks dataset entry — natural key (project, title)."""
 
     assignee_email: str | None
     description: str
@@ -81,7 +81,7 @@ class SeedTask(TypedDict):
 
 
 class SeedUser(TypedDict):
-    """Entrée du jeu de données utilisateurs — clé naturelle ``email``."""
+    """Users dataset entry — natural key ``email``."""
 
     email: str
     full_name: str
@@ -306,19 +306,19 @@ SEED_USERS: tuple[SeedUser, ...] = (
 async def _ensure_comment(
     db: AsyncSession, author_id: int, data: SeedComment, task_id: int
 ) -> Comment:
-    """Retourne le commentaire de clé naturelle (task, author, content), créé au besoin.
+    """Returns the comment of natural key (task, author, content), created if needed.
 
-    Règles métier :
-    - la clé naturelle est le triplet complet (D11) — deux contenus
-      identiques d'auteurs ou de tâches distincts restent deux lignes ;
-    - la création délègue à ``create_comment`` : vérifications 404 du
-      service conservées (double couche D2).
+    Business rules:
+    - the natural key is the full triplet (D11) — two identical
+      contents from distinct authors or tasks remain two rows;
+    - creation delegates to ``create_comment``: the service's 404
+      checks preserved (D2 double layer).
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     existing: Comment | None
     # ─────────────────────────────────────────
 
-    # [STEP 1] Chercher la clé naturelle → l'existant est réutilisé tel quel
+    # [STEP 1] Look up the natural key → the existing row is reused as is
     existing = await db.scalar(
         select(Comment).where(
             Comment.author_id == author_id,
@@ -329,7 +329,7 @@ async def _ensure_comment(
     if existing is not None:
         return existing
 
-    # [STEP 2] Créer via le service du domaine → invariants du domaine appliqués
+    # [STEP 2] Create through the domain service → domain invariants applied
     return await comments_services.create_comment(
         db,
         CommentCreate(author_id=author_id, content=data["content"], task_id=task_id),
@@ -349,24 +349,24 @@ async def _ensure_comment(
 async def _ensure_organization(
     db: AsyncSession, data: SeedOrganization, owner_id: int
 ) -> Organization:
-    """Retourne l'organisation de clé naturelle ``name``, créée au besoin.
+    """Returns the organization of natural key ``name``, created if needed.
 
-    Règles métier :
-    - ``organizations.name`` est UNIQUE (D14) : la recherche par nom est
-      déterministe ;
-    - la création délègue à ``create_organization`` : vérification 404 du
-      propriétaire conservée (double couche D2).
+    Business rules:
+    - ``organizations.name`` is UNIQUE (D14): the lookup by name is
+      deterministic;
+    - creation delegates to ``create_organization``: the owner's 404
+      check preserved (D2 double layer).
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     existing: Organization | None
     # ─────────────────────────────────────────
 
-    # [STEP 1] Chercher la clé naturelle → l'existant est réutilisé tel quel
+    # [STEP 1] Look up the natural key → the existing row is reused as is
     existing = await db.scalar(select(Organization).where(Organization.name == data["name"]))
     if existing is not None:
         return existing
 
-    # [STEP 2] Créer via le service du domaine → invariants du domaine appliqués
+    # [STEP 2] Create through the domain service → domain invariants applied
     return await organizations_services.create_organization(
         db, OrganizationCreate(name=data["name"], owner_id=owner_id)
     )
@@ -382,19 +382,19 @@ async def _ensure_organization(
 # called_by: scripts.seed.seed_database
 # [/RAG]
 async def _ensure_project(db: AsyncSession, data: SeedProject, organization_id: int) -> Project:
-    """Retourne le projet de clé naturelle (organization, name), créé au besoin.
+    """Returns the project of natural key (organization, name), created if needed.
 
-    Règles métier :
-    - l'unicité composée ``(organization_id, name)`` (D14) rend la
-      recherche déterministe — le même nom peut exister ailleurs ;
-    - la création délègue à ``create_project`` : vérifications du service
-      conservées (double couche D2).
+    Business rules:
+    - the composite uniqueness ``(organization_id, name)`` (D14) makes
+      the lookup deterministic — the same name may exist elsewhere;
+    - creation delegates to ``create_project``: the service's checks
+      preserved (D2 double layer).
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     existing: Project | None
     # ─────────────────────────────────────────
 
-    # [STEP 1] Chercher la clé naturelle → l'existant est réutilisé tel quel
+    # [STEP 1] Look up the natural key → the existing row is reused as is
     existing = await db.scalar(
         select(Project).where(
             Project.name == data["name"], Project.organization_id == organization_id
@@ -403,7 +403,7 @@ async def _ensure_project(db: AsyncSession, data: SeedProject, organization_id: 
     if existing is not None:
         return existing
 
-    # [STEP 2] Créer via le service du domaine → invariants du domaine appliqués
+    # [STEP 2] Create through the domain service → domain invariants applied
     return await projects_services.create_project(
         db,
         ProjectCreate(
@@ -425,27 +425,27 @@ async def _ensure_project(db: AsyncSession, data: SeedProject, organization_id: 
 async def _ensure_task(
     db: AsyncSession, assignee_id: int | None, data: SeedTask, project_id: int
 ) -> Task:
-    """Retourne la tâche de clé naturelle (project, title), créée au besoin.
+    """Returns the task of natural key (project, title), created if needed.
 
-    Règles métier :
-    - ``tasks.title`` ne porte aucune contrainte d'unicité (D14) : la
-      détermination du get-or-create repose sur le jeu de données constant,
-      qui ne répète jamais un couple (project, title) ;
-    - la création délègue à ``create_task`` : vérifications 404 du projet
-      et de l'assigné conservées (double couche D2).
+    Business rules:
+    - ``tasks.title`` carries no uniqueness constraint (D14): the
+      get-or-create determinism rests on the constant dataset, which
+      never repeats a (project, title) pair;
+    - creation delegates to ``create_task``: the project's and
+      assignee's 404 checks preserved (D2 double layer).
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     existing: Task | None
     # ─────────────────────────────────────────
 
-    # [STEP 1] Chercher la clé naturelle → l'existant est réutilisé tel quel
+    # [STEP 1] Look up the natural key → the existing row is reused as is
     existing = await db.scalar(
         select(Task).where(Task.project_id == project_id, Task.title == data["title"])
     )
     if existing is not None:
         return existing
 
-    # [STEP 2] Créer via le service du domaine → invariants du domaine appliqués
+    # [STEP 2] Create through the domain service → domain invariants applied
     return await tasks_services.create_task(
         db,
         TaskCreate(
@@ -469,24 +469,24 @@ async def _ensure_task(
 # called_by: scripts.seed.seed_database
 # [/RAG]
 async def _ensure_user(db: AsyncSession, data: SeedUser) -> User:
-    """Retourne l'utilisateur de clé naturelle ``email``, créé au besoin.
+    """Returns the user of natural key ``email``, created if needed.
 
-    Règles métier :
-    - ``users.email`` est UNIQUE (FR-007) : la recherche par email est
-      déterministe ;
-    - la création délègue à ``create_user`` : hachage bcrypt du mot de
-      passe conservé — un utilisateur existant n'est jamais re-haché.
+    Business rules:
+    - ``users.email`` is UNIQUE (FR-007): the lookup by email is
+      deterministic;
+    - creation delegates to ``create_user``: bcrypt password hashing
+      preserved — an existing user is never re-hashed.
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     existing: User | None
     # ─────────────────────────────────────────
 
-    # [STEP 1] Chercher la clé naturelle → l'existant est réutilisé tel quel
+    # [STEP 1] Look up the natural key → the existing row is reused as is
     existing = await db.scalar(select(User).where(User.email == data["email"]))
     if existing is not None:
         return existing
 
-    # [STEP 2] Créer via le service du domaine → invariants du domaine appliqués
+    # [STEP 2] Create through the domain service → domain invariants applied
     return await users_services.create_user(db, UserCreate.model_validate(data))
 
 
@@ -500,12 +500,12 @@ async def _ensure_user(db: AsyncSession, data: SeedUser) -> User:
 # called_by: none
 # [/RAG]
 def main() -> None:
-    """Point d'entrée synchrone de ``python -m app.scripts.seed``.
+    """Synchronous entry point of ``python -m app.scripts.seed``.
 
-    Invariant : relançable N fois sans doublon ni divergence (SC-004) —
-    toute la logique d'idempotence vit dans ``seed_database``.
+    Invariant: re-runnable N times with no duplicate and no divergence
+    (SC-004) — all the idempotence logic lives in ``seed_database``.
     """
-    # [STEP 1] Démarrer la boucle asyncio → seed exécuté, ressources libérées en sortie
+    # [STEP 1] Start the asyncio loop → seed executed, resources released on exit
     logging.basicConfig(level=logging.INFO)
     asyncio.run(run())
 
@@ -520,29 +520,29 @@ def main() -> None:
 # called_by: scripts.seed.main
 # [/RAG]
 async def run() -> None:
-    """Exécute le seed sur la base du projet via le moteur applicatif.
+    """Runs the seed on the project database through the application engine.
 
-    Invariants :
-    - le moteur vient de ``init_db_engine()`` et la session de
-      ``async_session_factory`` — jamais de session construite à la main ;
-    - le moteur est libéré même en cas d'échec du seed.
+    Invariants:
+    - the engine comes from ``init_db_engine()`` and the session from
+      ``async_session_factory`` — never a hand-built session;
+    - the engine is disposed even when the seed fails.
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     engine: AsyncEngine
     session: AsyncSession
     # ─────────────────────────────────────────
 
-    # [STEP 1] Créer le moteur et lier la factory → sessions du moteur applicatif
+    # [STEP 1] Create the engine and bind the factory → sessions from the app engine
     engine = init_db_engine()
     async_session_factory.configure(bind=engine)
 
-    # [STEP 2] Ouvrir une session et semer → état final identique à chaque exécution
+    # [STEP 2] Open a session and seed → same final state on every run
     try:
         async with async_session_factory() as session:
             await seed_database(session)
-        logger.info("Seed appliqué : base de démonstration peuplée.")
+        logger.info("Seed applied: demo database populated.")
     finally:
-        # [STEP 3] Libérer le moteur → aucune connexion résiduelle
+        # [STEP 3] Dispose the engine → no residual connection
         await engine.dispose()
 
 
@@ -557,16 +557,16 @@ async def run() -> None:
 # called_by: scripts.seed.run
 # [/RAG]
 async def seed_database(db: AsyncSession) -> None:
-    """Sème les cinq domaines dans l'ordre du graphe, par clé naturelle.
+    """Seeds the five domains in graph order, by natural key.
 
-    Règles métier :
-    - ordre strict users → organizations → projects → tasks → comments :
-      chaque étape résout les FK de la suivante par clé naturelle (D11) ;
-    - idempotence stricte : chaque entité est cherchée avant d'être créée —
-      deux exécutions successives produisent exactement le même état ;
-    - le jeu constant couvre les 6 arêtes FK, 2 rôles, 3 statuts,
-      3 priorités, tâches assignées et non assignées, ≥2 commentaires sur
-      une même tâche (plan Jalon 9).
+    Business rules:
+    - strict order users → organizations → projects → tasks → comments:
+      each step resolves the next step's FKs by natural key (D11);
+    - strict idempotence: every entity is looked up before being
+      created — two successive runs produce exactly the same state;
+    - the constant dataset covers the 6 FK edges, 2 roles, 3 statuses,
+      3 priorities, assigned and unassigned tasks, ≥2 comments on a
+      same task (Milestone 9 plan).
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     assignee_email: str | None
@@ -581,26 +581,26 @@ async def seed_database(db: AsyncSession) -> None:
     users: dict[str, User]
     # ─────────────────────────────────────────
 
-    # [STEP 1] Semer les utilisateurs → users indexés par email pour les FK aval
+    # [STEP 1] Seed the users → users indexed by email for downstream FKs
     users = {}
     for user_data in SEED_USERS:
         users[user_data["email"]] = await _ensure_user(db, user_data)
 
-    # [STEP 2] Semer les organisations → arête owner_id résolue par email
+    # [STEP 2] Seed the organizations → owner_id edge resolved by email
     organizations = {}
     for organization_data in SEED_ORGANIZATIONS:
         organizations[organization_data["name"]] = await _ensure_organization(
             db, organization_data, users[organization_data["owner_email"]].id
         )
 
-    # [STEP 3] Semer les projets → arête organization_id résolue par nom
+    # [STEP 3] Seed the projects → organization_id edge resolved by name
     projects = {}
     for project_data in SEED_PROJECTS:
         projects[project_data["name"]] = await _ensure_project(
             db, project_data, organizations[project_data["organization_name"]].id
         )
 
-    # [STEP 4] Semer les tâches → arêtes project_id et assignee_id (parfois nulle) résolues
+    # [STEP 4] Seed the tasks → project_id and assignee_id (sometimes null) edges resolved
     tasks = {}
     for task_data in SEED_TASKS:
         assignee_email = task_data["assignee_email"]
@@ -611,7 +611,7 @@ async def seed_database(db: AsyncSession) -> None:
             projects[task_data["project_name"]].id,
         )
 
-    # [STEP 5] Semer les commentaires → arêtes task_id et author_id résolues
+    # [STEP 5] Seed the comments → task_id and author_id edges resolved
     for comment_data in SEED_COMMENTS:
         await _ensure_comment(
             db,

@@ -5,12 +5,12 @@
 # schemas: UserBase(BaseModel), UserCreate(UserBase), UserRead(UserBase), UserUpdate(BaseModel)
 # entity: User
 # [/SCHEMA]
-"""Schémas Pydantic du domaine users.
+"""Pydantic schemas of the users domain.
 
-Données pures, sans logique ni méthode : quatre classes (Base, Create,
-Read, Update) en ordre alphabétique. Aucun schéma n'expose jamais le mot
-de passe, en clair ou haché (FR-009) ; les longueurs maximales sont
-alignées sur les colonnes de ``models.py``.
+Pure data, no logic and no methods: four classes (Base, Create, Read,
+Update) in alphabetical order. No schema ever exposes the password,
+cleartext or hashed (FR-009); maximum lengths are aligned with the
+``models.py`` columns.
 """
 
 # ─── IMPORTS ───
@@ -26,7 +26,7 @@ from app.domains.users.models import UserRole
 
 
 class UserBase(BaseModel):
-    """Champs communs aux écritures et aux lectures d'un utilisateur."""
+    """Fields shared by user writes and reads."""
 
     email: EmailStr = Field(max_length=255)
     full_name: str = Field(max_length=100)
@@ -34,13 +34,13 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    """Corps de POST — champs communs plus le mot de passe en clair (min 8)."""
+    """POST body — shared fields plus the cleartext password (min 8)."""
 
     password: str = Field(min_length=8)
 
 
 class UserRead(UserBase):
-    """Réponse API — jamais de champ mot de passe, en clair ou haché."""
+    """API response — never a password field, cleartext or hashed."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -50,7 +50,7 @@ class UserRead(UserBase):
 
 
 class UserUpdate(BaseModel):
-    """Corps de PATCH — tous champs optionnels, sémantique ``exclude_unset``."""
+    """PATCH body — all fields optional, ``exclude_unset`` semantics."""
 
     email: EmailStr | None = Field(default=None, max_length=255)
     full_name: str | None = Field(default=None, max_length=100)

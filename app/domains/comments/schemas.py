@@ -6,13 +6,13 @@
 #   CommentUpdate(BaseModel)
 # entity: Comment
 # [/SCHEMA]
-"""Schémas Pydantic du domaine comments.
+"""Pydantic schemas of the comments domain.
 
-Données pures, sans logique ni méthode : quatre classes (Base, Create,
-Read, Update) en ordre alphabétique. ``author_id`` et ``task_id``
-n'apparaissent que sur Create et Read — ni la tâche ni l'auteur ne sont
-modifiables en Phase 2 : Update ne porte que ``content``. ``content`` est
-un ``Text`` sans borne de longueur, aligné sur la colonne de ``models.py``.
+Pure data, no logic and no methods: four classes (Base, Create, Read,
+Update) in alphabetical order. ``author_id`` and ``task_id`` only
+appear on Create and Read — neither the task nor the author is
+modifiable in Phase 2: Update only carries ``content``. ``content`` is
+an unbounded ``Text``, aligned with the ``models.py`` column.
 """
 
 # ─── IMPORTS ───
@@ -26,20 +26,20 @@ from pydantic import BaseModel, ConfigDict
 
 
 class CommentBase(BaseModel):
-    """Champs communs aux écritures et aux lectures d'un commentaire."""
+    """Fields shared by comment writes and reads."""
 
     content: str
 
 
 class CommentCreate(CommentBase):
-    """Corps de POST — champs communs plus la tâche et l'auteur (fixés)."""
+    """POST body — shared fields plus the task and the author (fixed)."""
 
     author_id: int
     task_id: int
 
 
 class CommentRead(CommentBase):
-    """Réponse API — état complet, tâche, auteur et horodatages."""
+    """API response — full state, task, author and timestamps."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -51,6 +51,6 @@ class CommentRead(CommentBase):
 
 
 class CommentUpdate(BaseModel):
-    """Corps de PATCH — seul ``content`` est modifiable, sémantique ``exclude_unset``."""
+    """PATCH body — only ``content`` is modifiable, ``exclude_unset`` semantics."""
 
     content: str | None = None

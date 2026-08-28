@@ -6,13 +6,13 @@
 #   ProjectUpdate(BaseModel)
 # entity: Project
 # [/SCHEMA]
-"""Schémas Pydantic du domaine projects.
+"""Pydantic schemas of the projects domain.
 
-Données pures, sans logique ni méthode : quatre classes (Base, Create,
-Read, Update) en ordre alphabétique. ``organization_id`` n'apparaît que
-sur Create et Read — l'organisation n'est pas modifiable en Phase 2 ;
-``description`` porte le même défaut chaîne vide que la colonne ; les
-longueurs maximales sont alignées sur les colonnes de ``models.py``.
+Pure data, no logic and no methods: four classes (Base, Create, Read,
+Update) in alphabetical order. ``organization_id`` only appears on
+Create and Read — the organization is not modifiable in Phase 2;
+``description`` carries the same empty-string default as the column;
+maximum lengths are aligned with the ``models.py`` columns.
 """
 
 # ─── IMPORTS ───
@@ -26,20 +26,20 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class ProjectBase(BaseModel):
-    """Champs communs aux écritures et aux lectures d'un projet."""
+    """Fields shared by project writes and reads."""
 
     description: str = ""
     name: str = Field(max_length=100)
 
 
 class ProjectCreate(ProjectBase):
-    """Corps de POST — champs communs plus l'organisation, fixée à la création."""
+    """POST body — shared fields plus the organization, fixed at creation."""
 
     organization_id: int
 
 
 class ProjectRead(ProjectBase):
-    """Réponse API — état complet, organisation et horodatages inclus."""
+    """API response — full state, organization and timestamps included."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -50,7 +50,7 @@ class ProjectRead(ProjectBase):
 
 
 class ProjectUpdate(BaseModel):
-    """Corps de PATCH — nom et description seuls, sémantique ``exclude_unset``."""
+    """PATCH body — name and description only, ``exclude_unset`` semantics."""
 
     description: str | None = None
     name: str | None = Field(default=None, max_length=100)

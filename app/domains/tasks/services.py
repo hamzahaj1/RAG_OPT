@@ -1,12 +1,12 @@
 # [FILE] — app/domains/tasks/services.py
-"""Logique métier du domaine tasks.
+"""Business logic of the tasks domain.
 
-Porte toutes les règles du domaine — les routeurs restent des wrappers
-minces : existence du projet et, s'il est fourni, de l'assigné vérifiée
-par SELECT avant toute écriture (404 nommant l'entité manquante, première
-couche de D2 — les FK ``CASCADE``/``SET NULL`` sont le backstop), 404
-nommant l'entité et l'id. Une écriture par requête HTTP : ``commit`` puis
-``refresh`` ici, jamais dans les routeurs.
+Carries every rule of the domain — routers remain thin wrappers:
+existence of the project and, when provided, of the assignee checked by
+SELECT before any write (404 naming the missing entity, first layer of
+D2 — the ``CASCADE``/``SET NULL`` FKs are the backstop), 404 naming the
+entity and the id. One write per HTTP request: ``commit`` then
+``refresh`` here, never in the routers.
 """
 
 # ─── IMPORTS ───
@@ -37,16 +37,16 @@ from app.domains.users.models import User
 # called_by: scripts.seed._ensure_task, tasks.router.create_task
 # [/RAG]
 async def create_task(db: AsyncSession, data: TaskCreate) -> Task:
-    """Crée une tâche.
+    """Creates a task.
 
-    Règles métier :
-    - le projet doit exister : SELECT sur ``projects`` avant toute
-      écriture → 404 « Project {id} not found » (D2) ;
-    - l'assigné est optionnel ; s'il est fourni, il doit exister →
-      404 « User {id} not found » — une tâche naît non assignée quand
-      ``assignee_id`` est absent ou ``null`` ;
-    - ``status`` et ``priority`` hors enum sont refusés en 422 par
-      Pydantic, en amont de ce service.
+    Business rules:
+    - the project must exist: SELECT on ``projects`` before any write →
+      404 "Project {id} not found" (D2);
+    - the assignee is optional; when provided, it must exist → 404
+      "User {id} not found" — a task is born unassigned when
+      ``assignee_id`` is absent or ``null``;
+    - ``status`` and ``priority`` outside their enums are refused with
+      422 by Pydantic, upstream of this service.
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     assignee: User | None
@@ -54,18 +54,18 @@ async def create_task(db: AsyncSession, data: TaskCreate) -> Task:
     task: Task
     # ─────────────────────────────────────────
 
-    # [STEP 1] Vérifier l'existence du projet → aucune FK orpheline ne sera écrite
+    # [STEP 1] Check the project's existence → no orphan FK will be written
     project = await db.get(Project, data.project_id)
     if project is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"Project {data.project_id} not found")
 
-    # [STEP 2] Vérifier l'assigné s'il est fourni → assignation valide ou tâche libre
+    # [STEP 2] Check the assignee when provided → valid assignment or free task
     if data.assignee_id is not None:
         assignee = await db.get(User, data.assignee_id)
         if assignee is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, f"User {data.assignee_id} not found")
 
-    # [STEP 3] Persister et rafraîchir → id et horodatages serveur résolus
+    # [STEP 3] Persist and refresh → id and server timestamps resolved
     task = Task(
         assignee_id=data.assignee_id,
         description=data.description,
@@ -90,22 +90,22 @@ async def create_task(db: AsyncSession, data: TaskCreate) -> Task:
 # called_by: tasks.router.delete_task
 # [/RAG]
 async def delete_task(db: AsyncSession, task_id: int) -> None:
-    """Supprime une tâche.
+    """Deletes a task.
 
-    Règles métier :
-    - id inconnu → 404, aucune écriture ;
-    - la suppression descend en cascade vers les commentaires (Jalon 8) —
-      portée par la DB seule (``ondelete=CASCADE``), jamais par un SELECT
-      applicatif.
+    Business rules:
+    - unknown id → 404, no write;
+    - the deletion cascades down to the comments (Milestone 8) —
+      carried by the DB alone (``ondelete=CASCADE``), never by an
+      application-level SELECT.
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     task: Task
     # ─────────────────────────────────────────
 
-    # [STEP 1] Charger la tâche cible → 404 si absente
+    # [STEP 1] Load the target task → 404 if absent
     task = await get_task(db, task_id)
 
-    # [STEP 2] Supprimer et valider → la ligne n'existe plus, cascade DB en aval
+    # [STEP 2] Delete and commit → the row no longer exists, DB cascade downstream
     await db.delete(task)
     await db.commit()
 
@@ -120,20 +120,20 @@ async def delete_task(db: AsyncSession, task_id: int) -> None:
 # called_by: tasks.router.get_task, tasks.services.delete_task, tasks.services.update_task
 # [/RAG]
 async def get_task(db: AsyncSession, task_id: int) -> Task:
-    """Consulte une tâche par identifiant.
+    """Fetches a task by identifier.
 
-    Règles métier :
-    - id inconnu → 404 nommant l'entité et l'id (« Task 42 not found »),
-      format d'erreur commun aux cinq domaines (FR-003).
+    Business rules:
+    - unknown id → 404 naming the entity and the id ("Task 42 not
+      found"), error format shared by the five domains (FR-003).
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     task: Task | None
     # ─────────────────────────────────────────
 
-    # [STEP 1] Charger par clé primaire → task chargée ou None
+    # [STEP 1] Load by primary key → task loaded or None
     task = await db.get(Task, task_id)
 
-    # [STEP 2] Refuser l'absence → la sortie est garantie non nulle
+    # [STEP 2] Refuse absence → the output is guaranteed non-null
     if task is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"Task {task_id} not found")
     return task
@@ -149,18 +149,18 @@ async def get_task(db: AsyncSession, task_id: int) -> Task:
 # called_by: tasks.router.list_tasks
 # [/RAG]
 async def list_tasks(db: AsyncSession, limit: int, offset: int) -> Sequence[Task]:
-    """Liste les tâches par page.
+    """Lists tasks by page.
 
-    Règles métier :
-    - tri par id croissant : pagination stable et déterministe (D9) ;
-    - bornes (1 ≤ limit ≤ 100, offset ≥ 0) validées en amont par le
-      routeur — une liste vide est une réponse valide, pas une erreur.
+    Business rules:
+    - sorted by ascending id: stable, deterministic pagination (D9);
+    - bounds (1 ≤ limit ≤ 100, offset ≥ 0) validated upstream by the
+      router — an empty list is a valid response, not an error.
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     tasks: Sequence[Task]
     # ─────────────────────────────────────────
 
-    # [STEP 1] Charger la page demandée → tri par id, bornes appliquées
+    # [STEP 1] Load the requested page → sorted by id, bounds applied
     tasks = (await db.scalars(select(Task).order_by(Task.id).limit(limit).offset(offset))).all()
     return tasks
 
@@ -175,16 +175,16 @@ async def list_tasks(db: AsyncSession, limit: int, offset: int) -> Sequence[Task
 # called_by: tasks.router.update_task
 # [/RAG]
 async def update_task(db: AsyncSession, data: TaskUpdate, task_id: int) -> Task:
-    """Modifie partiellement une tâche.
+    """Partially updates a task.
 
-    Règles métier :
-    - sémantique ``exclude_unset`` : seuls les champs présents dans le
-      corps changent — le projet n'est jamais modifiable (Phase 2) ;
-    - ``assignee_id`` distingue trois cas : champ absent (pas de
-      changement), ``null`` explicite (désassignation, conservé par
-      ``exclude_unset``), entier (assignation — l'assigné doit exister
-      → 404) ;
-    - id inconnu → 404.
+    Business rules:
+    - ``exclude_unset`` semantics: only fields present in the body
+      change — the project is never modifiable (Phase 2);
+    - ``assignee_id`` distinguishes three cases: absent field (no
+      change), explicit ``null`` (unassignment, preserved by
+      ``exclude_unset``), integer (assignment — the assignee must
+      exist → 404);
+    - unknown id → 404.
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     assignee: User | None
@@ -194,13 +194,13 @@ async def update_task(db: AsyncSession, data: TaskUpdate, task_id: int) -> Task:
     value: Any
     # ─────────────────────────────────────────
 
-    # [STEP 1] Charger la tâche cible → 404 si absente
+    # [STEP 1] Load the target task → 404 if absent
     task = await get_task(db, task_id)
 
-    # [STEP 2] Extraire les champs réellement fournis → un null explicite est conservé
+    # [STEP 2] Extract the fields actually provided → an explicit null is preserved
     update_data = data.model_dump(exclude_unset=True)
 
-    # [STEP 3] Vérifier un nouvel assigné non nul → assignation valide ou désassignation
+    # [STEP 3] Check a new non-null assignee → valid assignment or unassignment
     if update_data.get("assignee_id") is not None:
         assignee = await db.get(User, update_data["assignee_id"])
         if assignee is None:
@@ -208,7 +208,7 @@ async def update_task(db: AsyncSession, data: TaskUpdate, task_id: int) -> Task:
                 status.HTTP_404_NOT_FOUND, f"User {update_data['assignee_id']} not found"
             )
 
-    # [STEP 4] Appliquer les champs et persister → horodatage de modification rafraîchi
+    # [STEP 4] Apply the fields and persist → modification timestamp refreshed
     for field, value in update_data.items():
         setattr(task, field, value)
     await db.commit()

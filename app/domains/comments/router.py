@@ -1,12 +1,12 @@
 # [FILE] — app/domains/comments/router.py
-"""Endpoints REST du domaine comments.
+"""REST endpoints of the comments domain.
 
-Cinq handlers homonymes des fonctions de service — wrappers minces sans
-aucune logique : validation par Pydantic, règles métier dans
-``services.py``, sérialisation par ``response_model``. Statuts et erreurs
-conformes au contrat commun (POST 201, GET 200, PATCH 200, DELETE 204) ;
-particularité du domaine : ``task_id`` est un paramètre de requête
-obligatoire sur la liste (FR-021, 422 s'il est absent).
+Five handlers homonymous with the service functions — thin wrappers
+with no logic at all: validation by Pydantic, business rules in
+``services.py``, serialization by ``response_model``. Statuses and
+errors follow the shared contract (POST 201, GET 200, PATCH 200,
+DELETE 204); domain particularity: ``task_id`` is a required query
+parameter on the listing (FR-021, 422 when absent).
 """
 
 # ─── IMPORTS ───
@@ -38,8 +38,8 @@ router = APIRouter(prefix="/comments", tags=["comments"])
 # [/RAG]
 @router.post("", response_model=CommentRead, status_code=status.HTTP_201_CREATED)
 async def create_comment(data: CommentCreate, db: AsyncSession = Depends(get_db)) -> Comment:
-    """Crée un commentaire — 201 ; 404 tâche ou auteur inexistant."""
-    # [STEP 1] Déléguer au service → tâche et auteur vérifiés avant écriture
+    """Creates a comment — 201; 404 missing task or author."""
+    # [STEP 1] Delegate to the service → task and author checked before write
     return await services.create_comment(db, data)
 
 
@@ -54,8 +54,8 @@ async def create_comment(data: CommentCreate, db: AsyncSession = Depends(get_db)
 # [/RAG]
 @router.delete("/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_comment(comment_id: int, db: AsyncSession = Depends(get_db)) -> None:
-    """Supprime un commentaire — 204 sans corps ; 404 id inconnu."""
-    # [STEP 1] Déléguer au service → existence vérifiée, ligne supprimée
+    """Deletes a comment — 204 with no body; 404 unknown id."""
+    # [STEP 1] Delegate to the service → existence checked, row deleted
     await services.delete_comment(db, comment_id)
 
 
@@ -70,8 +70,8 @@ async def delete_comment(comment_id: int, db: AsyncSession = Depends(get_db)) ->
 # [/RAG]
 @router.get("/{comment_id}", response_model=CommentRead)
 async def get_comment(comment_id: int, db: AsyncSession = Depends(get_db)) -> Comment:
-    """Consulte un commentaire — 200 ; 404 si l'id est inconnu."""
-    # [STEP 1] Déléguer au service → existence vérifiée
+    """Fetches a comment — 200; 404 if the id is unknown."""
+    # [STEP 1] Delegate to the service → existence checked
     return await services.get_comment(db, comment_id)
 
 
@@ -92,8 +92,8 @@ async def list_comments(
     offset: int = Query(default=0, ge=0),
     task_id: int = Query(),
 ) -> Sequence[Comment]:
-    """Liste les commentaires d'une tâche — 200 ; 422 sans task_id ; 404 tâche inconnue."""
-    # [STEP 1] Déléguer au service → tâche vérifiée, page filtrée et triée
+    """Lists the comments of a task — 200; 422 without task_id; 404 unknown task."""
+    # [STEP 1] Delegate to the service → task checked, page filtered and sorted
     return await services.list_comments(db, limit, offset, task_id)
 
 
@@ -111,6 +111,6 @@ async def list_comments(
 async def update_comment(
     comment_id: int, data: CommentUpdate, db: AsyncSession = Depends(get_db)
 ) -> Comment:
-    """Modifie partiellement un commentaire — 200 ; 404 id inconnu."""
-    # [STEP 1] Déléguer au service → PATCH partiel appliqué, contenu seul modifiable
+    """Partially updates a comment — 200; 404 unknown id."""
+    # [STEP 1] Delegate to the service → partial PATCH applied, content alone modifiable
     return await services.update_comment(db, comment_id, data)

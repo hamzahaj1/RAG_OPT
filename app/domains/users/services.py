@@ -1,11 +1,10 @@
 # [FILE] — app/domains/users/services.py
-"""Logique métier du domaine users.
+"""Business logic of the users domain.
 
-Porte toutes les règles du domaine — les routeurs restent des wrappers
-minces : unicité de l'email (409 avant toute écriture), hachage bcrypt du
-mot de passe (jamais de clair persisté), 404 nommant l'entité et l'id.
-Une écriture par requête HTTP : ``commit`` puis ``refresh`` ici, jamais
-dans les routeurs.
+Carries every rule of the domain — routers remain thin wrappers: email
+uniqueness (409 before any write), bcrypt password hashing (cleartext
+never persisted), 404 naming the entity and the id. One write per HTTP
+request: ``commit`` then ``refresh`` here, never in the routers.
 """
 
 # ─── IMPORTS ───
@@ -37,18 +36,18 @@ from app.domains.users.schemas import UserCreate, UserUpdate
 # called_by: users.services.create_user, users.services.update_user
 # [/RAG]
 def _hash_password(password: str) -> str:
-    """Dérive l'empreinte bcrypt irréversible d'un mot de passe (FR-009).
+    """Derives the irreversible bcrypt fingerprint of a password (FR-009).
 
-    Invariants :
-    - un sel frais est généré à chaque appel : deux appels sur la même
-      entrée produisent deux empreintes distinctes ;
-    - la comparaison ultérieure passe par bcrypt, jamais par égalité.
+    Invariants:
+    - a fresh salt is generated on every call: two calls on the same
+      input produce two distinct fingerprints;
+    - later comparison goes through bcrypt, never through equality.
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     hashed: bytes
     # ─────────────────────────────────────────
 
-    # [STEP 1] Hacher avec un sel frais → empreinte auto-salée, décodable en ASCII
+    # [STEP 1] Hash with a fresh salt → self-salted fingerprint, ASCII-decodable
     hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
     return hashed.decode("utf-8")
 
@@ -63,24 +62,24 @@ def _hash_password(password: str) -> str:
 # called_by: scripts.seed._ensure_user, users.router.create_user
 # [/RAG]
 async def create_user(db: AsyncSession, data: UserCreate) -> User:
-    """Crée un utilisateur.
+    """Creates a user.
 
-    Règles métier :
-    - l'email est unique sur toute la plateforme : un doublon est refusé
-      en 409 avant toute écriture (FR-007) ;
-    - seul le hash bcrypt du mot de passe est persisté (FR-009).
+    Business rules:
+    - the email is unique across the whole platform: a duplicate is
+      refused with 409 before any write (FR-007);
+    - only the bcrypt hash of the password is persisted (FR-009).
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     existing: User | None
     user: User
     # ─────────────────────────────────────────
 
-    # [STEP 1] Vérifier la disponibilité de l'email → aucun doublon ne sera écrit
+    # [STEP 1] Check email availability → no duplicate will be written
     existing = await db.scalar(select(User).where(User.email == data.email))
     if existing is not None:
         raise HTTPException(status.HTTP_409_CONFLICT, "Email already registered")
 
-    # [STEP 2] Construire l'utilisateur avec le hash → le clair ne quitte pas la requête
+    # [STEP 2] Build the user with the hash → the cleartext never leaves the request
     user = User(
         email=data.email,
         full_name=data.full_name,
@@ -88,7 +87,7 @@ async def create_user(db: AsyncSession, data: UserCreate) -> User:
         role=data.role.value,
     )
 
-    # [STEP 3] Persister et rafraîchir → id et horodatages serveur résolus
+    # [STEP 3] Persist and refresh → id and server timestamps resolved
     db.add(user)
     await db.commit()
     await db.refresh(user)
@@ -105,15 +104,17 @@ async def create_user(db: AsyncSession, data: UserCreate) -> User:
 # called_by: users.router.delete_user
 # [/RAG]
 async def delete_user(db: AsyncSession, user_id: int) -> None:
-    """Supprime un utilisateur.
+    """Deletes a user.
 
-    Règles métier :
-    - id inconnu → 404, aucune écriture ;
-    - propriétaire d'au moins une organisation → 409 avant toute écriture
-      (SELECT applicatif, la FK ``RESTRICT`` reste le backstop — D2) ;
-    - auteur d'au moins un commentaire → 409 avant toute écriture
-      (SELECT applicatif, la FK ``RESTRICT`` reste le backstop — D2) ;
-    - l'assignation de tâches ne bloque jamais : la DB désassigne seule
+    Business rules:
+    - unknown id → 404, no write;
+    - owner of at least one organization → 409 before any write
+      (application-level SELECT, the ``RESTRICT`` FK remains the
+      backstop — D2);
+    - author of at least one comment → 409 before any write
+      (application-level SELECT, the ``RESTRICT`` FK remains the
+      backstop — D2);
+    - task assignment never blocks: the DB unassigns on its own
       (``ondelete=SET NULL``, D2).
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
@@ -122,20 +123,20 @@ async def delete_user(db: AsyncSession, user_id: int) -> None:
     user: User
     # ─────────────────────────────────────────
 
-    # [STEP 1] Charger l'utilisateur cible → 404 si absent
+    # [STEP 1] Load the target user → 404 if absent
     user = await get_user(db, user_id)
 
-    # [STEP 2] Refuser un propriétaire d'organisations → aucune FK orpheline possible
+    # [STEP 2] Refuse an owner of organizations → no orphan FK possible
     owned = await db.scalar(select(Organization).where(Organization.owner_id == user_id))
     if owned is not None:
         raise HTTPException(status.HTTP_409_CONFLICT, f"User {user_id} still owns organizations")
 
-    # [STEP 3] Refuser un auteur de commentaires → l'attribution reste intègre
+    # [STEP 3] Refuse an author of comments → attribution stays intact
     authored = await db.scalar(select(Comment).where(Comment.author_id == user_id))
     if authored is not None:
         raise HTTPException(status.HTTP_409_CONFLICT, f"User {user_id} still has comments")
 
-    # [STEP 4] Supprimer et valider → la ligne n'existe plus
+    # [STEP 4] Delete and commit → the row no longer exists
     await db.delete(user)
     await db.commit()
 
@@ -150,20 +151,20 @@ async def delete_user(db: AsyncSession, user_id: int) -> None:
 # called_by: users.router.get_user, users.services.delete_user, users.services.update_user
 # [/RAG]
 async def get_user(db: AsyncSession, user_id: int) -> User:
-    """Consulte un utilisateur par identifiant.
+    """Fetches a user by identifier.
 
-    Règles métier :
-    - id inconnu → 404 nommant l'entité et l'id (« User 42 not found »),
-      format d'erreur commun aux cinq domaines (FR-003).
+    Business rules:
+    - unknown id → 404 naming the entity and the id ("User 42 not
+      found"), error format shared by the five domains (FR-003).
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     user: User | None
     # ─────────────────────────────────────────
 
-    # [STEP 1] Charger par clé primaire → user chargé ou None
+    # [STEP 1] Load by primary key → user loaded or None
     user = await db.get(User, user_id)
 
-    # [STEP 2] Refuser l'absence → la sortie est garantie non nulle
+    # [STEP 2] Refuse absence → the output is guaranteed non-null
     if user is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"User {user_id} not found")
     return user
@@ -179,18 +180,18 @@ async def get_user(db: AsyncSession, user_id: int) -> User:
 # called_by: users.router.list_users
 # [/RAG]
 async def list_users(db: AsyncSession, limit: int, offset: int) -> Sequence[User]:
-    """Liste les utilisateurs par page.
+    """Lists users by page.
 
-    Règles métier :
-    - tri par id croissant : pagination stable et déterministe (D9) ;
-    - bornes (1 ≤ limit ≤ 100, offset ≥ 0) validées en amont par le
-      routeur — une liste vide est une réponse valide, pas une erreur.
+    Business rules:
+    - sorted by ascending id: stable, deterministic pagination (D9);
+    - bounds (1 ≤ limit ≤ 100, offset ≥ 0) validated upstream by the
+      router — an empty list is a valid response, not an error.
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     users: Sequence[User]
     # ─────────────────────────────────────────
 
-    # [STEP 1] Charger la page demandée → tri par id, bornes appliquées
+    # [STEP 1] Load the requested page → sorted by id, bounds applied
     users = (await db.scalars(select(User).order_by(User.id).limit(limit).offset(offset))).all()
     return users
 
@@ -205,14 +206,14 @@ async def list_users(db: AsyncSession, limit: int, offset: int) -> Sequence[User
 # called_by: users.router.update_user
 # [/RAG]
 async def update_user(db: AsyncSession, data: UserUpdate, user_id: int) -> User:
-    """Modifie partiellement un utilisateur.
+    """Partially updates a user.
 
-    Règles métier :
-    - sémantique ``exclude_unset`` : seuls les champs présents dans le
-      corps changent, un champ absent reste intact ;
-    - un nouvel email est soumis à la même unicité que la création → 409 ;
-    - un nouveau mot de passe est re-haché, jamais persisté en clair ;
-    - id inconnu → 404.
+    Business rules:
+    - ``exclude_unset`` semantics: only fields present in the body
+      change, an absent field stays intact;
+    - a new email is subject to the same uniqueness as creation → 409;
+    - a new password is re-hashed, never persisted in cleartext;
+    - unknown id → 404.
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     existing: User | None
@@ -222,23 +223,23 @@ async def update_user(db: AsyncSession, data: UserUpdate, user_id: int) -> User:
     value: Any
     # ─────────────────────────────────────────
 
-    # [STEP 1] Charger l'utilisateur cible → 404 si absent
+    # [STEP 1] Load the target user → 404 if absent
     user = await get_user(db, user_id)
 
-    # [STEP 2] Extraire les champs réellement fournis → PATCH partiel fidèle
+    # [STEP 2] Extract the fields actually provided → faithful partial PATCH
     update_data = data.model_dump(exclude_unset=True)
 
-    # [STEP 3] Vérifier l'unicité d'un nouvel email → aucun doublon ne sera écrit
+    # [STEP 3] Check the uniqueness of a new email → no duplicate will be written
     if "email" in update_data and update_data["email"] != user.email:
         existing = await db.scalar(select(User).where(User.email == update_data["email"]))
         if existing is not None:
             raise HTTPException(status.HTTP_409_CONFLICT, "Email already registered")
 
-    # [STEP 4] Remplacer le mot de passe par son hash → le clair ne sort pas de l'étape
+    # [STEP 4] Replace the password with its hash → the cleartext does not leave the step
     if "password" in update_data:
         update_data["hashed_password"] = _hash_password(str(update_data.pop("password")))
 
-    # [STEP 5] Appliquer les champs et persister → horodatage de modification rafraîchi
+    # [STEP 5] Apply the fields and persist → modification timestamp refreshed
     for field, value in update_data.items():
         setattr(user, field, value)
     await db.commit()

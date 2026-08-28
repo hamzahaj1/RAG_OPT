@@ -7,14 +7,14 @@
 # fks: organization_id -> organizations.id [RESTRICT]
 # referenced_by: tasks.project_id -> CASCADE
 # [/MODEL]
-"""Modèle SQLAlchemy du domaine projects.
+"""SQLAlchemy model of the projects domain.
 
-Domaine central de la plateforme : ``organization_id`` référence
-``organizations.id`` en ``ondelete=RESTRICT`` — la DB refuse la
-suppression d'une organisation occupée, en backstop du 409 applicatif
-(D2). Le sens de la cascade descend de projects vers tasks puis comments
-(Jalons 7–8) ; jamais l'inverse. Aucune navigation ORM inter-domaines
-(pas de ``relationship()`` en Phase 2).
+Central domain of the platform: ``organization_id`` references
+``organizations.id`` with ``ondelete=RESTRICT`` — the DB refuses to
+delete an occupied organization, as the backstop of the
+application-level 409 (D2). The cascade direction goes down from
+projects to tasks then comments (Milestones 7–8); never the reverse. No
+cross-domain ORM navigation (no ``relationship()`` in Phase 2).
 """
 
 # ─── IMPORTS ───
@@ -31,16 +31,16 @@ from app.core.database import Base
 
 
 class Project(Base):
-    """Projet rattaché à une organisation.
+    """Project attached to an organization.
 
-    Invariants :
-    - ``name`` est unique **au sein de son organisation** (contrainte
-      composée ``(organization_id, name)``, D14) — deux organisations
-      peuvent porter des projets homonymes ;
-    - ``organization_id`` pointe toujours vers une organisation
-      existante : vérifié par le service (404 à l'écriture) et par la FK
-      ``RESTRICT`` (D2) ; l'organisation n'est pas modifiable en Phase 2 ;
-    - ``description`` n'est jamais NULL : chaîne vide par défaut.
+    Invariants:
+    - ``name`` is unique **within its organization** (composite
+      constraint ``(organization_id, name)``, D14) — two organizations
+      may hold same-named projects;
+    - ``organization_id`` always points to an existing organization:
+      checked by the service (404 on write) and by the ``RESTRICT`` FK
+      (D2); the organization is not modifiable in Phase 2;
+    - ``description`` is never NULL: empty string by default.
     """
 
     __tablename__ = "projects"
