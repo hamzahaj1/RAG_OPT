@@ -190,11 +190,11 @@ montrant `Depends(get_db)`) **et** `app/domains/users/models.py`
   son en-tête `CRITICAL_CORE` et `called_by` multi-domaines, plus un chunk
   d'endpoint de `users/router.py` montrant `Depends(get_db)`.
 
-- [ ] **T075** [J13] Dépendances dev : `fastembed` + `numpy` au groupe dev
+- [x] **T075** [J13] Dépendances dev : `fastembed` + `numpy` au groupe dev
       Poetry ; vérifier la disponibilité des wheels sous Python 3.14 local ;
       si absentes, acter le repli R5 (venv 3.12 jetable dédié au seul
       `rag_probe.py`) et le consigner dans le constat T080.
-- [ ] **T076** [J13] **Chunker** dans `scripts/rag_probe.py` (Standard V3,
+- [x] **T076** [J13] **Chunker** dans `scripts/rag_probe.py` (Standard V3,
       hors corpus) : découpage par marqueurs — un chunk = un bloc `[RAG]` +
       sa fonction (ancrages du format normatif) ; boilerplate d'imports
       exclu via `[CODE_START]` (FR-016) ; robustesse aux fichiers sans
@@ -202,17 +202,17 @@ montrant `Depends(get_db)`) **et** `app/domains/users/models.py`
       edge case de la spec — `core/database.py` n'en est plus le cas
       d'usage, l'échantillon étant intégralement annoté) ; échantillon figé
       ci-dessus.
-- [ ] **T077** [P] [J13] Tests du chunker seul (pur, sans embedding) dans
+- [x] **T077** [P] [J13] Tests du chunker seul (pur, sans embedding) dans
       `tests/unit/test_rag_probe.py` : bornes des chunks, exclusion du
       boilerplate, un chunk par fonction annotée, cas du fichier non annoté.
-- [ ] **T078** [J13] **Vectorisation et classement** dans `rag_probe.py` :
+- [x] **T078** [J13] **Vectorisation et classement** dans `rag_probe.py` :
       embeddings fastembed (`paraphrase-multilingual-MiniLM-L12-v2`), index
       = matrice numpy en mémoire, similarité cosinus, **top-k = 5** brut
       (R5) — pas de base vectorielle, pas de framework RAG.
-- [ ] **T079** [J13] Exécution **Q1** : classement top-5 complet relevé,
+- [x] **T079** [J13] Exécution **Q1** : classement top-5 complet relevé,
       présence/rang des attendus (`delete_user`, métadonnées d'arêtes)
       constatés.
-- [ ] **T080** [J13] Exécution **Q2** : classement top-5 complet relevé,
+- [x] **T080** [J13] Exécution **Q2** : classement top-5 complet relevé,
       présence/rang des attendus (`get_db` CRITICAL_CORE multi-domaines,
       endpoint avec `Depends(get_db)`) constatés.
 - [ ] **T081** [J13] **CONSTAT DOCUMENTÉ** —
