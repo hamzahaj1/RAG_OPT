@@ -262,11 +262,16 @@ jamais une reformulation du nom de la fonction.
 Toutes les variables locales déclarées et triées, typage explicite sur chaque
 ligne, avant toute logique ou structure de contrôle.
 
+**Marqueurs en anglais depuis la clôture de la phase 3 (2026-08-28)** —
+cohérence avec la politique de langue §4 ter : les marqueurs de zone
+voyagent dans les chunks vectorisés. Le fermant reste une ligne de
+tirets alignée en longueur sur l'ouvrant.
+
 ```python
-# ─── ZONE DE DÉCLARATION DES VARIABLES ───
+# ─── VARIABLE DECLARATION ZONE ───
 project: Optional[Project] = None
 update_data: dict
-# ─────────────────────────────────────────
+# ─────────────────────────────────
 ```
 
 ### Zone C — Algorithme

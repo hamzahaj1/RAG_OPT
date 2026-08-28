@@ -53,7 +53,8 @@ exception, aucun raccourci.
   limites — jamais une reformulation du nom.
 - **Zone B — Empreinte** : toutes les variables locales déclarées, triées
   et typées explicitement, avant toute logique, dans le bloc balisé
-  `─── ZONE DE DÉCLARATION DES VARIABLES ───`.
+  `─── VARIABLE DECLARATION ZONE ───` (marqueur anglais depuis la
+  clôture de la phase 3 — politique de langue, CLAUDE.md §4 ter).
 - **Zone C — Algorithme** : étapes `[STEP]` portant chacune une
   postcondition `→` ; borne de 25 à 30 lignes mesurée du premier `[STEP]`
   à la dernière ligne (zones A et B non bornées).
