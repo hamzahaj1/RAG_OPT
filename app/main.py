@@ -47,9 +47,9 @@ def create_app() -> FastAPI:
     - the DB lifecycle goes exclusively through ``lifespan``;
     - each domain (Phase 2) mounts its router here, nowhere else.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     app: FastAPI
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Instantiate FastAPI with the lifespan → DB lifecycle wired
     app = FastAPI(
@@ -93,9 +93,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
       request;
     - the engine is disposed at shutdown, no connection leaks.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     engine: AsyncEngine
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Create the async engine → DSN resolved from settings
     engine = init_db_engine()

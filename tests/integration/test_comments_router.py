@@ -42,10 +42,10 @@ async def _create_comment(
     Invariant : un échec de création fait échouer immédiatement le test
     appelant (assertion sur le statut) — jamais d'état partiel silencieux.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     body: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Poster le contenu sur la tâche et l'auteur fournis → commentaire persisté
     response = await client.post(
@@ -66,13 +66,13 @@ async def _create_comment_fixture_chain(client: AsyncClient, tag: str) -> dict[s
     l'email et les noms uniques au test appelant — aucune collision
     d'unicité entre scénarios d'un même fichier.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     author: dict[str, Any]
     organization: dict[str, Any]
     owner: dict[str, Any]
     project: dict[str, Any]
     task: dict[str, Any]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer le propriétaire, l'organisation et le projet → parents posés
     owner = await _create_user(client, f"{tag}@example.com")
@@ -91,10 +91,10 @@ async def _create_organization(client: AsyncClient, name: str, owner_id: int) ->
     Invariant : un échec de création fait échouer immédiatement le test
     appelant (assertion sur le statut) — jamais d'état partiel silencieux.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     body: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Poster le nom et le propriétaire fournis → organisation persistée
     response = await client.post("/api/v1/organizations", json={"name": name, "owner_id": owner_id})
@@ -109,10 +109,10 @@ async def _create_project(client: AsyncClient, name: str, organization_id: int) 
     Invariant : un échec de création fait échouer immédiatement le test
     appelant (assertion sur le statut) — jamais d'état partiel silencieux.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     body: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Poster le nom et l'organisation fournis → projet persisté
     response = await client.post(
@@ -129,10 +129,10 @@ async def _create_task(client: AsyncClient, project_id: int, title: str) -> dict
     Invariant : un échec de création fait échouer immédiatement le test
     appelant (assertion sur le statut) — jamais d'état partiel silencieux.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     body: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Poster le payload de référence sur le projet fourni → tâche persistée
     response = await client.post(
@@ -149,10 +149,10 @@ async def _create_user(client: AsyncClient, email: str) -> dict[str, Any]:
     Invariant : un échec de création fait échouer immédiatement le test
     appelant (assertion sur le statut) — jamais d'état partiel silencieux.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     body: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Poster le payload de référence avec l'email fourni → utilisateur persisté
     response = await client.post("/api/v1/users", json={**OWNER_PAYLOAD, "email": email})
@@ -163,11 +163,11 @@ async def _create_user(client: AsyncClient, email: str) -> dict[str, Any]:
 
 async def test_create_comment_returns_201(client: AsyncClient) -> None:
     """La création répond 201 avec le contrat CommentRead complet."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     body: dict[str, Any]
     chain: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Poser la tâche et l'auteur → les deux FK sont disponibles
     chain = await _create_comment_fixture_chain(client, "acme-comment")
@@ -193,10 +193,10 @@ async def test_create_comment_returns_201(client: AsyncClient) -> None:
 
 async def test_create_comment_unknown_author_returns_404(client: AsyncClient) -> None:
     """Un auteur inexistant est refusé en 404 nommant l'entité User (D2)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     chain: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Poster un commentaire d'un auteur jamais attribué → 404, détail nommé
     chain = await _create_comment_fixture_chain(client, "ghost-author")
@@ -210,10 +210,10 @@ async def test_create_comment_unknown_author_returns_404(client: AsyncClient) ->
 
 async def test_create_comment_unknown_task_returns_404(client: AsyncClient) -> None:
     """Une tâche inexistante est refusée en 404 nommant l'entité Task (D2)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     author: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Poster un commentaire vers une tâche jamais attribuée → 404, détail nommé
     author = await _create_user(client, "ghost-task-author@example.com")
@@ -232,11 +232,11 @@ async def test_delete_author_with_comments_returns_409(client: AsyncClient) -> N
     la FK ``RESTRICT`` reste le backstop — l'utilisateur ET ses
     commentaires subsistent intégralement après le refus.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     chain: dict[str, Any]
     comment: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer un commentaire d'un auteur sans organisation → seul blocage possible
     chain = await _create_comment_fixture_chain(client, "blocked-author")
@@ -258,11 +258,11 @@ async def test_delete_author_with_comments_returns_409(client: AsyncClient) -> N
 
 async def test_delete_comment_removes_comment(client: AsyncClient) -> None:
     """La suppression répond 204 sans corps, puis la consultation répond 404."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     chain: dict[str, Any]
     created: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer puis supprimer le commentaire → 204, corps vide
     chain = await _create_comment_fixture_chain(client, "temp-comment")
@@ -280,9 +280,9 @@ async def test_delete_comment_removes_comment(client: AsyncClient) -> None:
 
 async def test_delete_comment_unknown_id_returns_404(client: AsyncClient) -> None:
     """Supprimer un id inconnu répond 404 sans effet de bord (FR-003)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Supprimer un id jamais attribué → 404, détail nommant l'entité
     response = await client.delete("/api/v1/comments/999")
@@ -297,11 +297,11 @@ async def test_delete_project_cascades_to_tasks_and_comments(client: AsyncClient
     projet → tâches → commentaires par la DB seule (deux FK ``CASCADE``
     enchaînées), sans aucun SELECT applicatif intermédiaire.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     chain: dict[str, Any]
     comment: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer projet, tâche et commentaire → chaîne de contenance posée
     chain = await _create_comment_fixture_chain(client, "chain-cascade")
@@ -326,11 +326,11 @@ async def test_delete_task_cascades_to_comments(client: AsyncClient) -> None:
     Sens de la cascade : tasks → comments, jamais l'inverse — la tâche ne
     bloque pas sur ses commentaires.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     chain: dict[str, Any]
     comment: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer une tâche et son commentaire → axe de contenance posé
     chain = await _create_comment_fixture_chain(client, "cascade-comment")
@@ -349,11 +349,11 @@ async def test_delete_task_cascades_to_comments(client: AsyncClient) -> None:
 
 async def test_get_comment_returns_200(client: AsyncClient) -> None:
     """La consultation restitue exactement l'état renvoyé à la création."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     chain: dict[str, Any]
     created: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer puis consulter le commentaire → 200, corps identique au créé
     chain = await _create_comment_fixture_chain(client, "carol-comment")
@@ -367,9 +367,9 @@ async def test_get_comment_returns_200(client: AsyncClient) -> None:
 
 async def test_get_comment_unknown_id_returns_404(client: AsyncClient) -> None:
     """Consulter un id inconnu répond 404 avec un détail explicite (FR-003)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Consulter un id jamais attribué → 404, détail nommant l'entité
     response = await client.get("/api/v1/comments/999")
@@ -379,11 +379,11 @@ async def test_get_comment_unknown_id_returns_404(client: AsyncClient) -> None:
 
 async def test_list_comments_applies_pagination_bounds(client: AsyncClient) -> None:
     """``limit`` et ``offset`` découpent la liste de la tâche triée par id croissant."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     chain: dict[str, Any]
     index: int
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer trois commentaires sur la même tâche → ids 1, 2, 3
     chain = await _create_comment_fixture_chain(client, "pager-comment")
@@ -403,11 +403,11 @@ async def test_list_comments_applies_pagination_bounds(client: AsyncClient) -> N
 
 async def test_list_comments_filters_by_task(client: AsyncClient) -> None:
     """La liste restitue les commentaires de la tâche demandée — et uniquement elle."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     chain: dict[str, Any]
     other_task: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Commenter deux tâches distinctes → un commentaire de chaque côté
     chain = await _create_comment_fixture_chain(client, "filter-comment")
@@ -423,11 +423,11 @@ async def test_list_comments_filters_by_task(client: AsyncClient) -> None:
 
 async def test_list_comments_rejects_out_of_bounds_pagination(client: AsyncClient) -> None:
     """Des bornes hors contrat (limit 0 ou 101, offset négatif) répondent 422."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     chain: dict[str, Any]
     params: dict[str, int]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Soumettre chaque borne invalide avec task_id valide → 422 systématique
     chain = await _create_comment_fixture_chain(client, "bounds-comment")
@@ -440,9 +440,9 @@ async def test_list_comments_rejects_out_of_bounds_pagination(client: AsyncClien
 
 async def test_list_comments_requires_task_id(client: AsyncClient) -> None:
     """Lister sans ``task_id`` répond 422 — jamais de liste globale (FR-021)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Lister sans paramètre task_id → 422, validation du routeur
     response = await client.get("/api/v1/comments")
@@ -451,9 +451,9 @@ async def test_list_comments_requires_task_id(client: AsyncClient) -> None:
 
 async def test_list_comments_unknown_task_returns_404(client: AsyncClient) -> None:
     """Lister une tâche inexistante répond 404 nommant l'entité Task (D2)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Lister une tâche jamais attribuée → 404, détail nommé
     response = await client.get("/api/v1/comments", params={"task_id": 999})
@@ -463,9 +463,9 @@ async def test_list_comments_unknown_task_returns_404(client: AsyncClient) -> No
 
 async def test_update_comment_unknown_id_returns_404(client: AsyncClient) -> None:
     """Patcher un id inconnu répond 404 sans effet de bord (FR-003)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Patcher un id jamais attribué → 404, détail nommant l'entité
     response = await client.patch("/api/v1/comments/999", json={"content": "Nobody."})
@@ -475,12 +475,12 @@ async def test_update_comment_unknown_id_returns_404(client: AsyncClient) -> Non
 
 async def test_update_comment_updates_only_content(client: AsyncClient) -> None:
     """Le PATCH ne change que le contenu — tâche et auteur restent fixés."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     body: dict[str, Any]
     chain: dict[str, Any]
     created: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer un commentaire → état initial connu
     chain = await _create_comment_fixture_chain(client, "editor-comment")

@@ -30,9 +30,9 @@ async def _truncate_all_tables(db_engine: AsyncEngine) -> AsyncIterator[None]:
     - plus prévisible qu'un rollback : les services committent réellement
       pendant le test, le nettoyage se fait donc après coup (D10).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     table_names: str
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Laisser le test s'exécuter → assertions faites sur un état committé
     yield

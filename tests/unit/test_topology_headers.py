@@ -20,10 +20,10 @@ from tests.unit.corpus_fixtures import build_fixture_corpus
 
 def test_call_lists_capped_with_deterministic_synthesis() -> None:
     """Au-delà de 5 entrées, le champ d'appels devient une synthèse (plan, J10)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     rendered: list[str]
     values: list[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Soumettre 6 appelants sur 2 domaines → résumé déterministe attendu
     values = [
@@ -47,11 +47,11 @@ def test_call_lists_capped_with_deterministic_synthesis() -> None:
 
 def test_double_run_leaves_files_identical(tmp_path: Path) -> None:
     """Deux exécutions successives sur corpus inchangé = diff vide (FR-002)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     app_dir: Path
     changed_second: list[str]
     snapshots: dict[Path, str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Annoter une première fois → état de référence photographié
     app_dir = build_fixture_corpus(tmp_path)
@@ -67,11 +67,11 @@ def test_double_run_leaves_files_identical(tmp_path: Path) -> None:
 
 def test_headers_inserted_with_expected_fields(tmp_path: Path) -> None:
     """Chaque fonction cible reçoit un bloc complet, ancré au-dessus du bloc décoré."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     app_dir: Path
     router_text: str
     services_text: str
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Annoter le mini-corpus → blocs présents dans services et routeur
     app_dir = build_fixture_corpus(tmp_path)
@@ -94,11 +94,11 @@ def test_headers_inserted_with_expected_fields(tmp_path: Path) -> None:
 
 def test_models_and_schemas_files_untouched(tmp_path: Path) -> None:
     """Les fichiers hors périmètre [RAG] ne sont jamais réécrits (CLAUDE.md §7)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     app_dir: Path
     models_before: str
     schemas_before: str
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Photographier modèles et schémas → référence avant annotation
     app_dir = build_fixture_corpus(tmp_path)
@@ -113,12 +113,12 @@ def test_models_and_schemas_files_untouched(tmp_path: Path) -> None:
 
 def test_stale_block_is_replaced_without_accumulation(tmp_path: Path) -> None:
     """Un bloc périmé est intégralement remplacé — jamais dupliqué (R3)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     app_dir: Path
     reference: str
     services_path: Path
     tampered: str
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Annoter puis corrompre le bloc → poids falsifié dans le fichier
     app_dir = build_fixture_corpus(tmp_path)

@@ -26,9 +26,9 @@ VALID_PAYLOAD: dict[str, str | int] = {
 
 def test_project_create_accepts_valid_payload() -> None:
     """Un payload complet et conforme produit un schéma fidèle au contrat."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     schema: ProjectCreate
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Valider le payload de référence → tous les champs typés et normalisés
     schema = ProjectCreate.model_validate(VALID_PAYLOAD)
@@ -39,9 +39,9 @@ def test_project_create_accepts_valid_payload() -> None:
 
 def test_project_create_applies_description_default() -> None:
     """``description`` absente vaut chaîne vide — même défaut que la colonne (jamais NULL)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     schema: ProjectCreate
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Valider un payload sans description → défaut chaîne vide appliqué
     schema = ProjectCreate.model_validate({"name": "Alpha Scope", "organization_id": 1})
@@ -64,9 +64,9 @@ def test_project_create_rejects_name_longer_than_max() -> None:
 
 def test_project_update_accepts_empty_payload() -> None:
     """``ProjectUpdate`` vide est valide : un PATCH sans champ ne change rien."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     schema: ProjectUpdate
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Valider le corps vide → tous les champs restent non renseignés
     schema = ProjectUpdate.model_validate({})

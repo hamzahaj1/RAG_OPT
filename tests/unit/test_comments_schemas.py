@@ -25,9 +25,9 @@ VALID_PAYLOAD: dict[str, str | int] = {
 
 def test_comment_create_accepts_valid_payload() -> None:
     """Un payload complet et conforme produit un schéma fidèle au contrat."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     schema: CommentCreate
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Valider le payload de référence → tous les champs typés et normalisés
     schema = CommentCreate.model_validate(VALID_PAYLOAD)
@@ -38,9 +38,9 @@ def test_comment_create_accepts_valid_payload() -> None:
 
 def test_comment_create_rejects_missing_author_id() -> None:
     """L'auteur est obligatoire à la création — jamais implicite."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     payload: dict[str, str | int]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Soumettre un payload sans author_id → validation refusée
     payload = {key: value for key, value in VALID_PAYLOAD.items() if key != "author_id"}
@@ -50,9 +50,9 @@ def test_comment_create_rejects_missing_author_id() -> None:
 
 def test_comment_create_rejects_missing_content() -> None:
     """Le contenu est obligatoire à la création — aucun défaut, jamais NULL."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     payload: dict[str, str | int]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Soumettre un payload sans content → validation refusée
     payload = {key: value for key, value in VALID_PAYLOAD.items() if key != "content"}
@@ -62,9 +62,9 @@ def test_comment_create_rejects_missing_content() -> None:
 
 def test_comment_create_rejects_missing_task_id() -> None:
     """La tâche est obligatoire à la création — jamais implicite."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     payload: dict[str, str | int]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Soumettre un payload sans task_id → validation refusée
     payload = {key: value for key, value in VALID_PAYLOAD.items() if key != "task_id"}
@@ -74,9 +74,9 @@ def test_comment_create_rejects_missing_task_id() -> None:
 
 def test_comment_update_accepts_empty_payload() -> None:
     """``CommentUpdate`` vide est valide : un PATCH sans champ ne change rien."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     schema: CommentUpdate
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Valider le corps vide → tous les champs restent non renseignés
     schema = CommentUpdate.model_validate({})
@@ -90,9 +90,9 @@ def test_comment_update_rejects_immutable_parents() -> None:
     étrangers au schéma sont ignorés par validation — seul ``content``
     traverse ``model_dump(exclude_unset=True)``.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     schema: CommentUpdate
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Valider un corps portant les parents → seuls les champs du contrat restent
     schema = CommentUpdate.model_validate({"author_id": 7, "content": "Edited.", "task_id": 9})

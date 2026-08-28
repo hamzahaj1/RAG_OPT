@@ -20,11 +20,11 @@ from tests.unit.corpus_fixtures import build_fixture_corpus
 
 def test_code_chunks_exclude_imports_and_cover_functions(tmp_path: Path) -> None:
     """Chaque fonction annotée devient un chunk ; les imports n'y figurent pas."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     app_dir: Path
     chunks: list[rag_probe.Chunk]
     lines: list[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Annoter la fixture puis chunker le noyau → un chunk par fonction
     app_dir = build_fixture_corpus(tmp_path)
@@ -44,11 +44,11 @@ def test_code_chunks_exclude_imports_and_cover_functions(tmp_path: Path) -> None
 
 def test_model_file_yields_single_metadata_chunk(tmp_path: Path) -> None:
     """Un fichier de modèles donne son bloc [MODEL] seul — aucun chunk de code."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     app_dir: Path
     lines: list[str]
     metadata: list[rag_probe.Chunk]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Générer la structure puis chunker users/models.py → bloc seul
     app_dir = build_fixture_corpus(tmp_path)
@@ -64,11 +64,11 @@ def test_model_file_yields_single_metadata_chunk(tmp_path: Path) -> None:
 
 def test_router_chunk_carries_depends(tmp_path: Path) -> None:
     """Le chunk d'un endpoint embarque décorateur et ``Depends(get_db)``."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     app_dir: Path
     chunks: list[rag_probe.Chunk]
     lines: list[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Annoter puis chunker le routeur → l'arête Depends voyage avec le chunk
     app_dir = build_fixture_corpus(tmp_path)
@@ -82,10 +82,10 @@ def test_router_chunk_carries_depends(tmp_path: Path) -> None:
 
 def test_sample_inventory_matches_frozen_protocol() -> None:
     """L'échantillon réel figé produit exactement l'inventaire attendu (19 chunks)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     chunks: list[rag_probe.Chunk]
     identifiers: list[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Chunker l'échantillon du dépôt → comptage et attendus du protocole
     chunks = rag_probe.collect_chunks(Path("."))

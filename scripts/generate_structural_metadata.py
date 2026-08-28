@@ -60,9 +60,9 @@ def _entity_of_domain(models: tuple[corpus_analysis.ModelInfo, ...], domain: str
     Règle : le domaine de la phase 2 porte exactement un modèle ; ``none``
     est rendu si le module n'en déclare aucun (jamais une invention).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     entities: list[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Filtrer le registre par module → entité du domaine ou none
     entities = sorted(m.entity for m in models if m.module == f"{domain}.models")
@@ -79,9 +79,9 @@ def _format_model_block(
     ``referenced_by`` rend ``table.colonne -> politique`` (arêtes
     entrantes, signal RAG de la suppression).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     lines: list[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Assembler champs et marqueurs → synthèse anglaise en tête (J11, §4 ter)
     lines = [MODEL_OPEN]
@@ -105,9 +105,9 @@ def _format_schema_block(domain: str, classes: tuple[str, ...], entity: str) -> 
     Ordre normatif (plan § Formats) : domain, schemas (classes triées avec
     leur base directe), entity (modèle SQLAlchemy correspondant).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     lines: list[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Assembler champs et marqueurs → synthèse anglaise en tête (J11, §4 ter)
     lines = [SCHEMA_OPEN]
@@ -127,10 +127,10 @@ def _referenced_by_table(
     Invariant : dérivé des seules déclarations ``ForeignKey`` du corpus —
     la carte inverse reflète exactement le graphe relationnel réel.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     referenced: dict[str, list[str]]
     target_table: str
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Inverser chaque FK déclarée → entrantes triées par table cible
     referenced = {}
@@ -153,13 +153,13 @@ def _splice_file_blocks(
     existant à l'ancrage est intégralement retiré avant réinsertion.
     Retourne vrai si le fichier a réellement changé.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     anchor: int
     close_index: int
     lines: list[str]
     new_text: str
     original: str
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Localiser l'ancrage sous # [FILE] → jamais d'insertion aveugle
     original = path.read_text(encoding="utf-8")
@@ -195,11 +195,11 @@ def _synthesis_of_model(model: corpus_analysis.ModelInfo, referenced: list[str])
     « A {Entity} is not referenced by any table. » Jamais rédigée à la
     main.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     parts: list[str]
     policy: str
     source: str
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Rendre chaque arête entrante avec sa glose → phrase déterministe
     if not referenced:
@@ -219,10 +219,10 @@ def _synthesis_of_schema(domain: str, classes: tuple[str, ...], entity: str) -> 
     of the {Entity} entity. » — accord déterministe du verbe sur le
     comptage (« carries » au singulier).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     head: str
     verb: str
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Accorder tête et verbe sur le comptage → phrase déterministe
     head = "The Pydantic schema" if len(classes) == 1 else f"The {len(classes)} Pydantic schemas"
@@ -236,9 +236,9 @@ def _topology_payload(graph: corpus_analysis.CorpusGraph) -> dict[str, object]:
     Règle (R4) : ``sort_keys`` ne trie que les clés — chaque liste est
     triée explicitement ici ; aucun champ dépendant de l'environnement.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     functions: dict[str, dict[str, object]]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Rendre chaque nœud du graphe → entrées complètes et triées
     functions = {
@@ -266,7 +266,7 @@ def annotate_structure(app_dir: Path, topology_path: Path) -> list[str]:
     - ``TOPOLOGY.yaml`` est identique octet pour octet entre deux
       générations sur corpus inchangé (FR-012, SC-002).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     changed: list[str]
     graph: corpus_analysis.CorpusGraph
     models: tuple[corpus_analysis.ModelInfo, ...]
@@ -274,7 +274,7 @@ def annotate_structure(app_dir: Path, topology_path: Path) -> list[str]:
     referenced: dict[str, list[str]]
     schemas: dict[str, tuple[str, ...]]
     yaml_text: str
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Collecter modèles et schémas via l'analyse partagée → matière des blocs
     models = corpus_analysis.collect_models(app_dir)
@@ -330,9 +330,9 @@ def main() -> None:
       message exact — aucun bloc partiel n'est écrit dans ce cas ;
     - la sortie liste les fichiers modifiés (vide = structure déjà à jour).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     changed: list[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Générer la structure → échec explicite propagé en code retour 1
     try:

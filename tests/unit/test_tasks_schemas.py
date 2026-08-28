@@ -29,9 +29,9 @@ VALID_PAYLOAD: dict[str, str | int] = {
 
 def test_task_create_accepts_valid_payload() -> None:
     """Un payload complet et conforme produit un schéma fidèle au contrat."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     schema: TaskCreate
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Valider le payload de référence → tous les champs typés et normalisés
     schema = TaskCreate.model_validate(VALID_PAYLOAD)
@@ -44,9 +44,9 @@ def test_task_create_accepts_valid_payload() -> None:
 
 def test_task_create_allows_missing_assignee() -> None:
     """L'assigné est optionnel à la création : absent, la tâche naît non assignée."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     schema: TaskCreate
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Valider le payload sans assignee_id → défaut None appliqué
     schema = TaskCreate.model_validate(VALID_PAYLOAD)
@@ -55,10 +55,10 @@ def test_task_create_allows_missing_assignee() -> None:
 
 def test_task_create_applies_description_default() -> None:
     """``description`` absente vaut chaîne vide — même défaut que la colonne (jamais NULL)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     payload: dict[str, str | int]
     schema: TaskCreate
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Valider un payload sans description → défaut chaîne vide appliqué
     payload = {key: value for key, value in VALID_PAYLOAD.items() if key != "description"}
@@ -68,9 +68,9 @@ def test_task_create_applies_description_default() -> None:
 
 def test_task_create_rejects_missing_project_id() -> None:
     """Le projet est obligatoire à la création — jamais implicite."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     payload: dict[str, str | int]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Soumettre un payload sans project_id → validation refusée
     payload = {key: value for key, value in VALID_PAYLOAD.items() if key != "project_id"}
@@ -101,9 +101,9 @@ def test_task_create_rejects_title_longer_than_max() -> None:
 
 def test_task_update_accepts_empty_payload() -> None:
     """``TaskUpdate`` vide est valide : un PATCH sans champ ne change rien."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     schema: TaskUpdate
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Valider le corps vide → tous les champs restent non renseignés
     schema = TaskUpdate.model_validate({})
@@ -117,10 +117,10 @@ def test_task_update_distinguishes_absent_field_from_explicit_null() -> None:
     traverser ``model_dump(exclude_unset=True)`` pour produire le SET NULL
     applicatif, tandis qu'un corps sans le champ ne touche pas l'assignation.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     with_explicit_null: TaskUpdate
     without_field: TaskUpdate
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Valider un corps sans le champ → assignee_id exclu du dump partiel
     without_field = TaskUpdate.model_validate({"title": "Retitrée"})

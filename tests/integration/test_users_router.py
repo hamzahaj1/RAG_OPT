@@ -35,10 +35,10 @@ async def _create_user(client: AsyncClient, email: str) -> dict[str, Any]:
     Invariant : un échec de création fait échouer immédiatement le test
     appelant (assertion sur le statut) — jamais d'état partiel silencieux.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     body: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Poster le payload de référence avec l'email fourni → utilisateur persisté
     response = await client.post("/api/v1/users", json={**USER_PAYLOAD, "email": email})
@@ -49,9 +49,9 @@ async def _create_user(client: AsyncClient, email: str) -> dict[str, Any]:
 
 async def test_create_user_duplicate_email_returns_409(client: AsyncClient) -> None:
     """Un second utilisateur sur le même email est refusé en conflit (FR-007)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Occuper l'email → première création persistée
     await _create_user(client, "dup@example.com")
@@ -64,10 +64,10 @@ async def test_create_user_duplicate_email_returns_409(client: AsyncClient) -> N
 
 async def test_create_user_returns_201_without_password(client: AsyncClient) -> None:
     """La création répond 201 avec id et horodatages, sans aucun champ mot de passe."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     body: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer l'utilisateur de référence → 201 attendu
     response = await client.post("/api/v1/users", json=USER_PAYLOAD)
@@ -87,10 +87,10 @@ async def test_create_user_returns_201_without_password(client: AsyncClient) -> 
 
 async def test_delete_user_removes_user(client: AsyncClient) -> None:
     """La suppression répond 204 sans corps, puis la consultation répond 404."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     created: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer puis supprimer l'utilisateur → 204, corps vide
     created = await _create_user(client, "temp@example.com")
@@ -105,9 +105,9 @@ async def test_delete_user_removes_user(client: AsyncClient) -> None:
 
 async def test_delete_user_unknown_id_returns_404(client: AsyncClient) -> None:
     """Supprimer un id inconnu répond 404 sans effet de bord (FR-003)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Supprimer un id jamais attribué → 404, détail nommant l'entité
     response = await client.delete("/api/v1/users/999")
@@ -117,10 +117,10 @@ async def test_delete_user_unknown_id_returns_404(client: AsyncClient) -> None:
 
 async def test_get_user_returns_200(client: AsyncClient) -> None:
     """La consultation restitue exactement l'état renvoyé à la création."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     created: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer puis consulter l'utilisateur → 200, corps identique au créé
     created = await _create_user(client, "carol@example.com")
@@ -131,9 +131,9 @@ async def test_get_user_returns_200(client: AsyncClient) -> None:
 
 async def test_get_user_unknown_id_returns_404(client: AsyncClient) -> None:
     """Consulter un id inconnu répond 404 avec un détail explicite (FR-003)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Consulter un id jamais attribué → 404, détail nommant l'entité
     response = await client.get("/api/v1/users/999")
@@ -143,10 +143,10 @@ async def test_get_user_unknown_id_returns_404(client: AsyncClient) -> None:
 
 async def test_list_users_applies_pagination_bounds(client: AsyncClient) -> None:
     """``limit`` et ``offset`` découpent la liste triée par id croissant."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     index: int
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer trois utilisateurs → ids 1, 2, 3 (identités remises à zéro)
     for index in range(3):
@@ -160,10 +160,10 @@ async def test_list_users_applies_pagination_bounds(client: AsyncClient) -> None
 
 async def test_list_users_rejects_out_of_bounds_pagination(client: AsyncClient) -> None:
     """Des bornes hors contrat (limit 0 ou 101, offset négatif) répondent 422."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     params: dict[str, int]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Soumettre chaque borne invalide → 422 systématique, aucune lecture
     for params in ({"limit": 0}, {"limit": 101}, {"offset": -1}):
@@ -173,9 +173,9 @@ async def test_list_users_rejects_out_of_bounds_pagination(client: AsyncClient) 
 
 async def test_list_users_returns_default_page(client: AsyncClient) -> None:
     """Sans paramètres : liste vide valide, puis page par défaut triée par id."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Lister une base vide → 200 et collection vide, pas une erreur
     response = await client.get("/api/v1/users")
@@ -195,10 +195,10 @@ async def test_list_users_returns_default_page(client: AsyncClient) -> None:
 
 async def test_update_user_duplicate_email_returns_409(client: AsyncClient) -> None:
     """Un PATCH vers un email déjà enregistré est refusé en conflit (FR-007)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     created: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Occuper un email et créer la cible du PATCH → deux utilisateurs distincts
     await _create_user(client, "taken@example.com")
@@ -214,11 +214,11 @@ async def test_update_user_duplicate_email_returns_409(client: AsyncClient) -> N
 
 async def test_update_user_partial_patch_updates_only_given_fields(client: AsyncClient) -> None:
     """Seuls les champs présents dans le corps changent (sémantique exclude_unset)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     body: dict[str, Any]
     created: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer l'utilisateur cible → état initial connu
     created = await _create_user(client, "dave@example.com")
@@ -244,11 +244,11 @@ async def test_update_user_role_round_trips_api_db_api(
     ``mode="json"`` — le rôle transite en ``UserRole`` et doit être persisté
     comme sa valeur chaîne exacte, puis relu identique par l'API.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     created: dict[str, Any]
     response: Response
     stored_role: str | None
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer un utilisateur member → état initial distinct de la cible du PATCH
     response = await client.post(
@@ -275,9 +275,9 @@ async def test_update_user_role_round_trips_api_db_api(
 
 async def test_update_user_unknown_id_returns_404(client: AsyncClient) -> None:
     """Patcher un id inconnu répond 404 sans effet de bord (FR-003)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Patcher un id jamais attribué → 404, détail nommant l'entité
     response = await client.patch("/api/v1/users/999", json={"full_name": "Nobody"})

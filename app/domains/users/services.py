@@ -43,9 +43,9 @@ def _hash_password(password: str) -> str:
       input produce two distinct fingerprints;
     - later comparison goes through bcrypt, never through equality.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     hashed: bytes
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Hash with a fresh salt → self-salted fingerprint, ASCII-decodable
     hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
@@ -69,10 +69,10 @@ async def create_user(db: AsyncSession, data: UserCreate) -> User:
       refused with 409 before any write (FR-007);
     - only the bcrypt hash of the password is persisted (FR-009).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     existing: User | None
     user: User
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Check email availability → no duplicate will be written
     existing = await db.scalar(select(User).where(User.email == data.email))
@@ -117,11 +117,11 @@ async def delete_user(db: AsyncSession, user_id: int) -> None:
     - task assignment never blocks: the DB unassigns on its own
       (``ondelete=SET NULL``, D2).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     authored: Comment | None
     owned: Organization | None
     user: User
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Load the target user → 404 if absent
     user = await get_user(db, user_id)
@@ -157,9 +157,9 @@ async def get_user(db: AsyncSession, user_id: int) -> User:
     - unknown id → 404 naming the entity and the id ("User 42 not
       found"), error format shared by the five domains (FR-003).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     user: User | None
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Load by primary key → user loaded or None
     user = await db.get(User, user_id)
@@ -187,9 +187,9 @@ async def list_users(db: AsyncSession, limit: int, offset: int) -> Sequence[User
     - bounds (1 ≤ limit ≤ 100, offset ≥ 0) validated upstream by the
       router — an empty list is a valid response, not an error.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     users: Sequence[User]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Load the requested page → sorted by id, bounds applied
     users = (await db.scalars(select(User).order_by(User.id).limit(limit).offset(offset))).all()
@@ -215,13 +215,13 @@ async def update_user(db: AsyncSession, data: UserUpdate, user_id: int) -> User:
     - a new password is re-hashed, never persisted in cleartext;
     - unknown id → 404.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     existing: User | None
     field: str
     update_data: dict[str, Any]
     user: User
     value: Any
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Load the target user → 404 if absent
     user = await get_user(db, user_id)

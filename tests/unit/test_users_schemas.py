@@ -27,9 +27,9 @@ VALID_PAYLOAD: dict[str, str] = {
 
 def test_user_create_accepts_valid_payload() -> None:
     """Un payload complet et conforme produit un schéma fidèle au contrat."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     schema: UserCreate
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Valider le payload de référence → tous les champs typés et normalisés
     schema = UserCreate.model_validate(VALID_PAYLOAD)
@@ -83,9 +83,9 @@ def test_user_read_excludes_password_fields() -> None:
 
 def test_user_update_accepts_empty_payload() -> None:
     """``UserUpdate`` vide est valide : un PATCH sans champ ne change rien."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     schema: UserUpdate
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Valider le corps vide → tous les champs restent non renseignés
     schema = UserUpdate.model_validate({})

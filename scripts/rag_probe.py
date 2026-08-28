@@ -80,13 +80,13 @@ def _chunk_code(module: str, lines: list[str]) -> list[Chunk]:
     précède ``[CODE_START]`` — imports, en-tête, docstring de module —
     n'entre dans aucun chunk (FR-016).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     chunks: list[Chunk]
     code_start: int
     name: str
     starts: list[int]
     stop: int
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Borner la zone de code et relever les blocs → ancrages des chunks
     code_start = lines.index(CODE_START_MARKER) if CODE_START_MARKER in lines else 0
@@ -116,13 +116,13 @@ def _chunk_metadata(module: str, lines: list[str]) -> list[Chunk]:
     ``entity`` du bloc) ou ``<module> [SCHEMA]`` ; le bloc est le chunk —
     le signal d'arêtes (``referenced_by``) voyage avec lui.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     chunks: list[Chunk]
     close_index: int
     entity: str
     identifier: str
     kind: str
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Balayer les paires de marqueurs → un chunk par bloc structurel
     chunks = []
@@ -150,10 +150,10 @@ def _rank(matrix: np.ndarray, query: np.ndarray, chunks: list[Chunk]) -> list[tu
     identifiant croissant (déterminisme) — les égalités à 4 décimales
     restent visibles dans le relevé.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     ranked: list[tuple[float, str]]
     scores: np.ndarray
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Noter chaque chunk et trier → top-k stable et reproductible
     scores = matrix @ query
@@ -173,12 +173,12 @@ def collect_chunks(root: Path) -> list[Chunk]:
     - un fichier sans bloc [RAG] par fonction (modèles) reste découpé
       correctement sur ses marqueurs de base (edge case de la spec).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     chunks: list[Chunk]
     lines: list[str]
     module: str
     path: Path
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Chunker chaque fichier de l'échantillon → code puis métadonnées
     chunks = []
@@ -200,7 +200,7 @@ def main() -> None:
       interprétation ; égalités signalées ;
     - critères binaires évalués tels que figés, jamais ajustés ici.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     chunks: list[Chunk]
     crit_a: bool
     crit_b: bool
@@ -210,7 +210,7 @@ def main() -> None:
     ranked: list[tuple[float, str]]
     rendered: list[str]
     top_ids: list[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Inventorier les chunks → comptage et identifiants intégraux
     chunks = collect_chunks(Path("."))

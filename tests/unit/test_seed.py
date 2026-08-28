@@ -31,11 +31,11 @@ def test_seed_dataset_covers_enums_and_roles() -> None:
     C'est la couverture d'ensembles fermés exigée par le plan Jalon 9 :
     un pipeline RAG indexant le seed doit rencontrer chaque valeur.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     priorities: set[str]
     roles: set[str]
     statuses: set[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Collecter les valeurs d'enum du jeu → chaque ensemble fermé est complet
     priorities = {task["priority"] for task in SEED_TASKS}
@@ -53,10 +53,10 @@ def test_seed_dataset_exercises_optional_and_nested_edges() -> None:
     libre, au moins deux commentaires sur une même tâche, et un projet
     multi-tâches — les volumes du plan (5, 2, 4, 12, 8) sont exacts.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     comments_per_task: Counter[str]
     tasks_per_project: Counter[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Compter les volumes → conformes au plan Jalon 9
     assert len(SEED_USERS) == 5
@@ -84,13 +84,13 @@ def test_seed_dataset_natural_keys_are_unique() -> None:
     FK se fait par nom seul), couples (project, title) et triplets
     (task, author, content) sans doublon.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     comment_keys: list[tuple[str, str, str]]
     emails: list[str]
     organization_names: list[str]
     project_names: list[str]
     task_keys: list[tuple[str, str]]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Collecter chaque clé naturelle → listes ordonnées, doublons visibles
     comment_keys = [
@@ -118,12 +118,12 @@ def test_seed_dataset_references_resolve() -> None:
     de projet, commentaires par titre de tâche, assignés par email ou
     ``None`` explicite.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     emails: set[str]
     organization_names: set[str]
     project_names: set[str]
     task_titles: set[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Indexer les clés naturelles amont → cibles de résolution disponibles
     emails = {user["email"] for user in SEED_USERS}

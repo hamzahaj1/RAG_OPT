@@ -110,9 +110,9 @@ def _anchor_lineno(func: ast.FunctionDef | ast.AsyncFunctionDef) -> int:
     Invariant : l'ancrage précède toujours la totalité du bloc de la
     fonction — le fragment RAG (en-tête + fonction) reste contigu.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     lineno: int
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Choisir la première ligne du bloc décoré → ancrage stable
     lineno = func.decorator_list[0].lineno if func.decorator_list else func.lineno
@@ -126,7 +126,7 @@ def _build_signature(func: ast.FunctionDef | ast.AsyncFunctionDef) -> str:
     unique), annotations et défauts rendus par ``ast.unparse`` — la
     signature est dérivée du code réel, jamais copiée.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     argument: ast.arg
     default: ast.expr | None
     defaults: dict[int, ast.expr]
@@ -134,7 +134,7 @@ def _build_signature(func: ast.FunctionDef | ast.AsyncFunctionDef) -> str:
     parts: list[str]
     rendered: str
     returns: str
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Aligner les défauts positionnels sur la fin des arguments → index exacts
     defaults = {
@@ -174,10 +174,10 @@ def _collect_aliases(tree: ast.Module) -> dict[str, str]:
     Couvre ``import a.b as c`` (c → a.b) et ``from m import x as y``
     (y → m.x) — la résolution vers le corpus se fait au point d'usage.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     aliases: dict[str, str]
     statement: ast.stmt
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Parcourir les imports de premier niveau → table locale complète
     aliases = {}
@@ -209,10 +209,10 @@ def _collect_class_columns(cls: ast.ClassDef) -> list[str]:
     Invariant du corpus : toute colonne est déclarée en ``Mapped`` — la
     liste dérive de la structure, jamais d'une énumération manuelle.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     columns: list[str]
     statement: ast.stmt
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Relever chaque attribut Mapped → colonnes triées de la table
     columns = []
@@ -233,12 +233,12 @@ def _collect_class_fks(cls: ast.ClassDef) -> list[ForeignKeyInfo]:
     la politique vient du mot-clé ``ondelete`` — ``NO ACTION`` si absent
     (défaut SQL), jamais une valeur inventée.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     fks: list[ForeignKeyInfo]
     node: ast.AST
     policy: str
     statement: ast.stmt
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Chercher ForeignKey dans chaque colonne → arête complète par appel
     fks = []
@@ -274,10 +274,10 @@ def _collect_local_model_types(
     Invariant du corpus : toute variable locale est déclarée et typée en
     Zone B — la table variable → table SQL en découle sans inférence.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     local_types: dict[str, str]
     statement: ast.stmt
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Lire chaque déclaration annotée → variable liée à sa table modèle
     local_types = {}
@@ -295,10 +295,10 @@ def _collect_model_tables(trees: dict[str, ast.Module]) -> dict[str, str]:
     Un modèle est toute classe portant un ``__tablename__`` constant —
     la détection est structurelle, indépendante du fichier porteur.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     statement: ast.stmt
     tables: dict[str, str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Balayer les classes de tous les modules → registre complet
     tables = {}
@@ -322,10 +322,10 @@ def _collect_model_tables(trees: dict[str, ast.Module]) -> dict[str, str]:
 
 def _collect_module_symbols(tree: ast.Module) -> frozenset[str]:
     """Noms définis au premier niveau d'un module (fonctions, classes, constantes)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     statement: ast.stmt
     symbols: set[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Relever chaque définition de premier niveau → univers des symboles
     symbols = set()
@@ -360,9 +360,9 @@ def _module_qualified(app_dir: Path, path: Path) -> str:
     ``app/core/database.py`` → ``core.database`` ; ``app/main.py`` →
     ``main`` ; les ``__init__.py`` prennent le nom de leur paquet.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     parts: list[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Décomposer le chemin relatif → segments sans suffixe ni __init__
     parts = list(path.relative_to(app_dir).with_suffix("").parts)
@@ -381,9 +381,9 @@ def _normalize_target(dotted: str) -> str:
     ``app.domains.users.services.create_user`` → ``users.services.create_user`` ;
     une cible hors ``app.*`` est rendue telle quelle (externe au corpus).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     parts: list[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Réduire le préfixe app.domains → espace de noms du corpus
     if dotted != "app" and not dotted.startswith("app."):
@@ -401,12 +401,12 @@ def _parse_corpus(app_dir: Path) -> tuple[dict[str, ast.Module], dict[str, str]]
     même ordre, mêmes résultats, sur toute machine. Retourne les AST et
     la table module qualifié → chemin POSIX réel (messages d'échec).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     files: dict[str, str]
     module: str
     path: Path
     trees: dict[str, ast.Module]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Lire et parser chaque fichier trié → un AST par module qualifié
     files = {}
@@ -425,10 +425,10 @@ def _resolve_attribute(node: ast.Attribute, context: _ModuleContext) -> str | No
     exister (sinon échec explicite) ; base aliasée vers un module externe
     ou nom local → appel de méthode, hors graphe.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     qualified: str
     target: str
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Ne traiter que base nominale aliasée → le reste est méthode locale
     if not isinstance(node.value, ast.Name) or node.value.id not in context.aliases:
@@ -456,14 +456,14 @@ def _resolve_function(
     lue ; les mutations suivent ``db.add``/``db.delete``/``setattr``/
     écriture d'attribut sur variable typée modèle (Zone B).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     called_ids: frozenset[int]
     constructor_ids: frozenset[int]
     local_types: dict[str, str]
     node: ast.AST
     source: str
     target: str | None
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Préparer le cadre local → clé source, types Zone B, positions d'appel
     source = f"{context.module}.{func.name}"
@@ -506,10 +506,10 @@ def _resolve_mutation(node: ast.AST, local_types: dict[str, str], mutated: set[s
     et l'affectation d'attribut ``var.champ = ...`` mutent la table de
     ``var`` — ``var`` étant typée modèle en Zone B (invariant du corpus).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     first: ast.expr
     target: ast.expr
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Reconnaître db.add/db.delete/setattr → table de l'argument muté
     if isinstance(node, ast.Call) and node.args:
@@ -542,9 +542,9 @@ def _resolve_name(node: ast.Name, context: _ModuleContext, called: bool) -> str 
     module, ni builtin est un échec explicite (les simples chargements
     restent des variables locales, légitimes).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     qualified: str
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Résoudre par alias d'import → fonction corpus = arête, sinon connu
     if node.id in context.aliases:
@@ -575,10 +575,10 @@ def _validate_imports(
     de sa cible ; l'import relatif est hors standard — tout écart est un
     échec nommé, jamais ignoré.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     normalized: str
     statement: ast.stmt
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     for statement in tree.body:
         # [STEP 1] Contrôler les imports de modules → cible présente dans le corpus
@@ -618,10 +618,10 @@ def _walk_runtime(node: ast.AST) -> Iterator[ast.AST]:
     les défauts de paramètres (``Depends(...)``) et les décorateurs sont
     exécutés, donc inclus ; les fonctions imbriquées sont traversées.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     child: ast.AST
     stack: list[ast.AST]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Descendre en profondeur en élaguant les annotations → runtime seul
     stack = [node]
@@ -652,7 +652,7 @@ def analyze_corpus(app_dir: Path) -> CorpusGraph:
     - le résultat est déterministe : fichiers triés, structures reproduites
       à l'identique sur corpus inchangé (R6).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     context: _ModuleContext
     files: dict[str, str]
     graph: CorpusGraph
@@ -660,7 +660,7 @@ def analyze_corpus(app_dir: Path) -> CorpusGraph:
     modules: frozenset[str]
     symbols: dict[str, frozenset[str]]
     trees: dict[str, ast.Module]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Parser le corpus et bâtir les univers → modules, symboles, modèles
     trees, files = _parse_corpus(app_dir)
@@ -722,12 +722,12 @@ def collect_models(app_dir: Path) -> tuple[ModelInfo, ...]:
     - colonnes et FK dérivent de l'AST : le bloc [MODEL] n'énonce que ce
       que le code déclare (FR-001).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     models: list[ModelInfo]
     statement: ast.stmt
     tables: dict[str, str]
     trees: dict[str, ast.Module]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Parser le corpus et croiser le registre → une entrée par modèle
     trees, _ = _parse_corpus(app_dir)
@@ -754,12 +754,12 @@ def collect_schemas(app_dir: Path) -> dict[str, tuple[str, ...]]:
     Règle : la base rendue est la première base déclarée (héritage direct),
     dérivée de l'AST — le bloc [SCHEMA] reflète la hiérarchie réelle.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     entries: list[str]
     schemas: dict[str, tuple[str, ...]]
     statement: ast.stmt
     trees: dict[str, ast.Module]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Balayer les modules de schémas → classes rendues avec leur base
     trees, _ = _parse_corpus(app_dir)
@@ -786,10 +786,10 @@ def tier_of(graph: CorpusGraph, qualified: str) -> str:
     référencées par 3+ domaines → CRITICAL_CORE ; référencé par un service
     ou le seed → CORE ; sinon LEAF — le niveau le plus élevé l'emporte.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     callers: list[str]
     domains: set[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Trancher les membres nommés → cœur critique par décision figée
     if qualified in NAMED_CRITICAL_CORE:

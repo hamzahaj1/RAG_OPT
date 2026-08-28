@@ -48,11 +48,11 @@ async def create_task(db: AsyncSession, data: TaskCreate) -> Task:
     - ``status`` and ``priority`` outside their enums are refused with
       422 by Pydantic, upstream of this service.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     assignee: User | None
     project: Project | None
     task: Task
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Check the project's existence → no orphan FK will be written
     project = await db.get(Project, data.project_id)
@@ -98,9 +98,9 @@ async def delete_task(db: AsyncSession, task_id: int) -> None:
       carried by the DB alone (``ondelete=CASCADE``), never by an
       application-level SELECT.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     task: Task
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Load the target task → 404 if absent
     task = await get_task(db, task_id)
@@ -126,9 +126,9 @@ async def get_task(db: AsyncSession, task_id: int) -> Task:
     - unknown id → 404 naming the entity and the id ("Task 42 not
       found"), error format shared by the five domains (FR-003).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     task: Task | None
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Load by primary key → task loaded or None
     task = await db.get(Task, task_id)
@@ -156,9 +156,9 @@ async def list_tasks(db: AsyncSession, limit: int, offset: int) -> Sequence[Task
     - bounds (1 ≤ limit ≤ 100, offset ≥ 0) validated upstream by the
       router — an empty list is a valid response, not an error.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     tasks: Sequence[Task]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Load the requested page → sorted by id, bounds applied
     tasks = (await db.scalars(select(Task).order_by(Task.id).limit(limit).offset(offset))).all()
@@ -186,13 +186,13 @@ async def update_task(db: AsyncSession, data: TaskUpdate, task_id: int) -> Task:
       exist → 404);
     - unknown id → 404.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     assignee: User | None
     field: str
     task: Task
     update_data: dict[str, Any]
     value: Any
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Load the target task → 404 if absent
     task = await get_task(db, task_id)

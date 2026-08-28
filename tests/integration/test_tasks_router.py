@@ -39,10 +39,10 @@ async def _create_organization(client: AsyncClient, name: str, owner_id: int) ->
     Invariant : un échec de création fait échouer immédiatement le test
     appelant (assertion sur le statut) — jamais d'état partiel silencieux.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     body: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Poster le nom et le propriétaire fournis → organisation persistée
     response = await client.post("/api/v1/organizations", json={"name": name, "owner_id": owner_id})
@@ -57,10 +57,10 @@ async def _create_project(client: AsyncClient, name: str, organization_id: int) 
     Invariant : un échec de création fait échouer immédiatement le test
     appelant (assertion sur le statut) — jamais d'état partiel silencieux.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     body: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Poster le nom et l'organisation fournis → projet persisté
     response = await client.post(
@@ -77,10 +77,10 @@ async def _create_task(client: AsyncClient, project_id: int, title: str) -> dict
     Invariant : un échec de création fait échouer immédiatement le test
     appelant (assertion sur le statut) — jamais d'état partiel silencieux.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     body: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Poster le payload de référence sur le projet fourni → tâche persistée
     response = await client.post(
@@ -97,11 +97,11 @@ async def _create_task_fixture_chain(client: AsyncClient, tag: str) -> dict[str,
     Invariant : ``tag`` rend l'email et les noms uniques au test appelant —
     aucune collision d'unicité entre scénarios d'un même fichier.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     organization: dict[str, Any]
     owner: dict[str, Any]
     project: dict[str, Any]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer le propriétaire → référence users disponible
     owner = await _create_user(client, f"{tag}@example.com")
@@ -118,10 +118,10 @@ async def _create_user(client: AsyncClient, email: str) -> dict[str, Any]:
     Invariant : un échec de création fait échouer immédiatement le test
     appelant (assertion sur le statut) — jamais d'état partiel silencieux.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     body: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Poster le payload de référence avec l'email fourni → utilisateur persisté
     response = await client.post("/api/v1/users", json={**OWNER_PAYLOAD, "email": email})
@@ -132,11 +132,11 @@ async def _create_user(client: AsyncClient, email: str) -> dict[str, Any]:
 
 async def test_create_task_invalid_enum_returns_422(client: AsyncClient) -> None:
     """Un statut ou une priorité hors enum est refusé en 422 par Pydantic (D1)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     invalid_field: dict[str, str]
     project: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Poser le projet parent → seule la validation d'enum peut échouer ensuite
     project = await _create_task_fixture_chain(client, "enum-task")
@@ -152,12 +152,12 @@ async def test_create_task_invalid_enum_returns_422(client: AsyncClient) -> None
 
 async def test_create_task_returns_201_with_assignee(client: AsyncClient) -> None:
     """La création assignée répond 201 avec le contrat TaskRead complet."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     assignee: dict[str, Any]
     body: dict[str, Any]
     project: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer le projet et un assigné distinct → les deux FK sont disponibles
     project = await _create_task_fixture_chain(client, "acme-task")
@@ -183,11 +183,11 @@ async def test_create_task_returns_201_with_assignee(client: AsyncClient) -> Non
 
 async def test_create_task_returns_201_without_assignee(client: AsyncClient) -> None:
     """La création sans assigné répond 201 : la tâche naît libre (assignee_id null)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     body: dict[str, Any]
     project: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Poster une tâche sans assignee_id → 201, tâche non assignée
     project = await _create_task_fixture_chain(client, "free-task")
@@ -201,10 +201,10 @@ async def test_create_task_returns_201_without_assignee(client: AsyncClient) -> 
 
 async def test_create_task_unknown_assignee_returns_404(client: AsyncClient) -> None:
     """Un assigné inexistant est refusé en 404 nommant l'entité User (D2)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     project: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Poster une tâche vers un assigné jamais attribué → 404, détail nommé
     project = await _create_task_fixture_chain(client, "ghost-assignee")
@@ -218,9 +218,9 @@ async def test_create_task_unknown_assignee_returns_404(client: AsyncClient) -> 
 
 async def test_create_task_unknown_project_returns_404(client: AsyncClient) -> None:
     """Un projet inexistant est refusé en 404 nommant l'entité Project (D2)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Poster une tâche vers un projet jamais attribué → 404, détail nommé
     response = await client.post("/api/v1/tasks", json={**TASK_PAYLOAD, "project_id": 999})
@@ -234,12 +234,12 @@ async def test_delete_assignee_sets_task_assignee_to_null(client: AsyncClient) -
     Sens du SET NULL : porté par la DB seule (``ondelete=SET NULL``, D2) —
     aucune retouche applicative de ``delete_user`` pour ce cas.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     assignee: dict[str, Any]
     project: dict[str, Any]
     response: Response
     task: dict[str, Any]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer une tâche assignée à un utilisateur sans organisation → FK posée
     project = await _create_task_fixture_chain(client, "setnull-task")
@@ -267,11 +267,11 @@ async def test_delete_project_cascades_to_tasks(client: AsyncClient) -> None:
     Sens de la cascade : projects → tasks (→ comments au Jalon 8), jamais
     l'inverse — le projet ne bloque pas sur ses tâches.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     project: dict[str, Any]
     response: Response
     task: dict[str, Any]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer un projet et sa tâche → axe de contenance posé
     project = await _create_task_fixture_chain(client, "cascade-task")
@@ -288,11 +288,11 @@ async def test_delete_project_cascades_to_tasks(client: AsyncClient) -> None:
 
 async def test_delete_task_removes_task(client: AsyncClient) -> None:
     """La suppression répond 204 sans corps, puis la consultation répond 404."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     created: dict[str, Any]
     project: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer puis supprimer la tâche → 204, corps vide
     project = await _create_task_fixture_chain(client, "temp-task")
@@ -308,9 +308,9 @@ async def test_delete_task_removes_task(client: AsyncClient) -> None:
 
 async def test_delete_task_unknown_id_returns_404(client: AsyncClient) -> None:
     """Supprimer un id inconnu répond 404 sans effet de bord (FR-003)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Supprimer un id jamais attribué → 404, détail nommant l'entité
     response = await client.delete("/api/v1/tasks/999")
@@ -320,11 +320,11 @@ async def test_delete_task_unknown_id_returns_404(client: AsyncClient) -> None:
 
 async def test_get_task_returns_200(client: AsyncClient) -> None:
     """La consultation restitue exactement l'état renvoyé à la création."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     created: dict[str, Any]
     project: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer puis consulter la tâche → 200, corps identique au créé
     project = await _create_task_fixture_chain(client, "carol-task")
@@ -336,9 +336,9 @@ async def test_get_task_returns_200(client: AsyncClient) -> None:
 
 async def test_get_task_unknown_id_returns_404(client: AsyncClient) -> None:
     """Consulter un id inconnu répond 404 avec un détail explicite (FR-003)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Consulter un id jamais attribué → 404, détail nommant l'entité
     response = await client.get("/api/v1/tasks/999")
@@ -348,11 +348,11 @@ async def test_get_task_unknown_id_returns_404(client: AsyncClient) -> None:
 
 async def test_list_tasks_applies_pagination_bounds(client: AsyncClient) -> None:
     """``limit`` et ``offset`` découpent la liste triée par id croissant."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     index: int
     project: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer trois tâches → ids 1, 2, 3 (identités remises à zéro)
     project = await _create_task_fixture_chain(client, "pager-task")
@@ -367,10 +367,10 @@ async def test_list_tasks_applies_pagination_bounds(client: AsyncClient) -> None
 
 async def test_list_tasks_rejects_out_of_bounds_pagination(client: AsyncClient) -> None:
     """Des bornes hors contrat (limit 0 ou 101, offset négatif) répondent 422."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     params: dict[str, int]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Soumettre chaque borne invalide → 422 systématique, aucune lecture
     for params in ({"limit": 0}, {"limit": 101}, {"offset": -1}):
@@ -380,10 +380,10 @@ async def test_list_tasks_rejects_out_of_bounds_pagination(client: AsyncClient) 
 
 async def test_list_tasks_returns_default_page(client: AsyncClient) -> None:
     """Sans paramètres : liste vide valide, puis page par défaut triée par id."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     project: dict[str, Any]
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Lister une base vide → 200 et collection vide, pas une erreur
     response = await client.get("/api/v1/tasks")
@@ -409,12 +409,12 @@ async def test_update_task_assigns_then_unassigns_via_explicit_null(client: Asyn
     fourni désassigne (SET NULL applicatif), tandis qu'un PATCH sans le
     champ — couvert par le test de PATCH partiel — ne change rien.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     assignee: dict[str, Any]
     project: dict[str, Any]
     response: Response
     task: dict[str, Any]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer une tâche libre et un assigné → état initial non assigné
     project = await _create_task_fixture_chain(client, "assign-task")
@@ -437,13 +437,13 @@ async def test_update_task_assigns_then_unassigns_via_explicit_null(client: Asyn
 
 async def test_update_task_partial_patch_updates_only_given_fields(client: AsyncClient) -> None:
     """Seuls les champs présents dans le corps changent (sémantique exclude_unset)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     assignee: dict[str, Any]
     body: dict[str, Any]
     project: dict[str, Any]
     response: Response
     task: dict[str, Any]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer une tâche assignée → état initial connu, assignation posée
     project = await _create_task_fixture_chain(client, "dave-task")
@@ -468,11 +468,11 @@ async def test_update_task_partial_patch_updates_only_given_fields(client: Async
 
 async def test_update_task_unknown_assignee_returns_404(client: AsyncClient) -> None:
     """Patcher vers un assigné inexistant répond 404 sans modifier la tâche (D2)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     project: dict[str, Any]
     response: Response
     task: dict[str, Any]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Créer une tâche libre → cible du PATCH posée
     project = await _create_task_fixture_chain(client, "ghost-patch")
@@ -488,9 +488,9 @@ async def test_update_task_unknown_assignee_returns_404(client: AsyncClient) -> 
 
 async def test_update_task_unknown_id_returns_404(client: AsyncClient) -> None:
     """Patcher un id inconnu répond 404 sans effet de bord (FR-003)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     response: Response
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Patcher un id jamais attribué → 404, détail nommant l'entité
     response = await client.patch("/api/v1/tasks/999", json={"title": "Nobody Task"})

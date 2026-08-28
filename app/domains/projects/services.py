@@ -45,11 +45,11 @@ async def create_project(db: AsyncSession, data: ProjectCreate) -> Project:
       there is refused with 409 — two distinct organizations may hold
       same-named projects.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     existing: Project | None
     organization: Organization | None
     project: Project
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Check the organization's existence → no orphan FK will be written
     organization = await db.get(Organization, data.organization_id)
@@ -97,9 +97,9 @@ async def delete_project(db: AsyncSession, project_id: int) -> None:
       (Milestones 7–8) — carried by the DB alone (``ondelete=CASCADE``),
       never by an application-level SELECT.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     project: Project
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Load the target project → 404 if absent
     project = await get_project(db, project_id)
@@ -126,9 +126,9 @@ async def get_project(db: AsyncSession, project_id: int) -> Project:
     - unknown id → 404 naming the entity and the id ("Project 42 not
       found"), error format shared by the five domains (FR-003).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     project: Project | None
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Load by primary key → project loaded or None
     project = await db.get(Project, project_id)
@@ -156,9 +156,9 @@ async def list_projects(db: AsyncSession, limit: int, offset: int) -> Sequence[P
     - bounds (1 ≤ limit ≤ 100, offset ≥ 0) validated upstream by the
       router — an empty list is a valid response, not an error.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     projects: Sequence[Project]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Load the requested page → sorted by id, bounds applied
     projects = (
@@ -186,13 +186,13 @@ async def update_project(db: AsyncSession, data: ProjectUpdate, project_id: int)
       organization** as creation → 409 (D14);
     - unknown id → 404.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     existing: Project | None
     field: str
     project: Project
     update_data: dict[str, Any]
     value: Any
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Load the target project → 404 if absent
     project = await get_project(db, project_id)

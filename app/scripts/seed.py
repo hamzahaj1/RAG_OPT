@@ -314,9 +314,9 @@ async def _ensure_comment(
     - creation delegates to ``create_comment``: the service's 404
       checks preserved (D2 double layer).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     existing: Comment | None
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Look up the natural key → the existing row is reused as is
     existing = await db.scalar(
@@ -357,9 +357,9 @@ async def _ensure_organization(
     - creation delegates to ``create_organization``: the owner's 404
       check preserved (D2 double layer).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     existing: Organization | None
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Look up the natural key → the existing row is reused as is
     existing = await db.scalar(select(Organization).where(Organization.name == data["name"]))
@@ -390,9 +390,9 @@ async def _ensure_project(db: AsyncSession, data: SeedProject, organization_id: 
     - creation delegates to ``create_project``: the service's checks
       preserved (D2 double layer).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     existing: Project | None
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Look up the natural key → the existing row is reused as is
     existing = await db.scalar(
@@ -434,9 +434,9 @@ async def _ensure_task(
     - creation delegates to ``create_task``: the project's and
       assignee's 404 checks preserved (D2 double layer).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     existing: Task | None
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Look up the natural key → the existing row is reused as is
     existing = await db.scalar(
@@ -477,9 +477,9 @@ async def _ensure_user(db: AsyncSession, data: SeedUser) -> User:
     - creation delegates to ``create_user``: bcrypt password hashing
       preserved — an existing user is never re-hashed.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     existing: User | None
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Look up the natural key → the existing row is reused as is
     existing = await db.scalar(select(User).where(User.email == data["email"]))
@@ -527,10 +527,10 @@ async def run() -> None:
       ``async_session_factory`` — never a hand-built session;
     - the engine is disposed even when the seed fails.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     engine: AsyncEngine
     session: AsyncSession
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Create the engine and bind the factory → sessions from the app engine
     engine = init_db_engine()
@@ -568,7 +568,7 @@ async def seed_database(db: AsyncSession) -> None:
       3 priorities, assigned and unassigned tasks, ≥2 comments on a
       same task (Milestone 9 plan).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     assignee_email: str | None
     comment_data: SeedComment
     organization_data: SeedOrganization
@@ -579,7 +579,7 @@ async def seed_database(db: AsyncSession) -> None:
     tasks: dict[str, Task]
     user_data: SeedUser
     users: dict[str, User]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Seed the users → users indexed by email for downstream FKs
     users = {}

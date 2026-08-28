@@ -44,11 +44,11 @@ async def create_organization(db: AsyncSession, data: OrganizationCreate) -> Org
     - the name is unique across the whole platform: a duplicate is
       refused with 409 before any write (FR-012).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     existing: Organization | None
     organization: Organization
     owner: User | None
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Check the owner's existence → no orphan FK will be written
     owner = await db.get(User, data.owner_id)
@@ -87,10 +87,10 @@ async def delete_organization(db: AsyncSession, organization_id: int) -> None:
       backstop — D2): the deletion is blocked by the projects, never
       propagated to them.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     held: Project | None
     organization: Organization
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Load the target organization → 404 if absent
     organization = await get_organization(db, organization_id)
@@ -124,9 +124,9 @@ async def get_organization(db: AsyncSession, organization_id: int) -> Organizati
     - unknown id → 404 naming the entity and the id ("Organization 42
       not found"), error format shared by the five domains (FR-003).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     organization: Organization | None
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Load by primary key → organization loaded or None
     organization = await db.get(Organization, organization_id)
@@ -154,9 +154,9 @@ async def list_organizations(db: AsyncSession, limit: int, offset: int) -> Seque
     - bounds (1 ≤ limit ≤ 100, offset ≥ 0) validated upstream by the
       router — an empty list is a valid response, not an error.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     organizations: Sequence[Organization]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Load the requested page → sorted by id, bounds applied
     organizations = (
@@ -186,13 +186,13 @@ async def update_organization(
     - a new name is subject to the same uniqueness as creation → 409;
     - unknown id → 404.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     existing: Organization | None
     field: str
     organization: Organization
     update_data: dict[str, Any]
     value: Any
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Load the target organization → 404 if absent
     organization = await get_organization(db, organization_id)

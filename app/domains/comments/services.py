@@ -48,11 +48,11 @@ async def create_comment(db: AsyncSession, data: CommentCreate) -> Comment:
     - the task and the author are fixed at creation — neither is
       modifiable afterwards (Phase 2).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     author: User | None
     comment: Comment
     task: Task | None
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Check the task's existence → no orphan FK will be written
     task = await db.get(Task, data.task_id)
@@ -93,9 +93,9 @@ async def delete_comment(db: AsyncSession, comment_id: int) -> None:
     - leaf of the graph: no table references ``comments``, the deletion
       is a plain DELETE with no downstream check (D7).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     comment: Comment
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Load the target comment → 404 if absent
     comment = await get_comment(db, comment_id)
@@ -122,9 +122,9 @@ async def get_comment(db: AsyncSession, comment_id: int) -> Comment:
     - unknown id → 404 naming the entity and the id ("Comment 42 not
       found"), error format shared by the five domains (FR-003).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     comment: Comment | None
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Load by primary key → comment loaded or None
     comment = await db.get(Comment, comment_id)
@@ -158,10 +158,10 @@ async def list_comments(
     - bounds (1 ≤ limit ≤ 100, offset ≥ 0) validated upstream by the
       router — an empty list is a valid response, not an error.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     comments: Sequence[Comment]
     task: Task | None
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Check the task's existence → the filter points to a real task
     task = await db.get(Task, task_id)
@@ -199,12 +199,12 @@ async def update_comment(db: AsyncSession, comment_id: int, data: CommentUpdate)
       (Phase 2);
     - unknown id → 404.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     comment: Comment
     field: str
     update_data: dict[str, Any]
     value: Any
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Load the target comment → 404 if absent
     comment = await get_comment(db, comment_id)

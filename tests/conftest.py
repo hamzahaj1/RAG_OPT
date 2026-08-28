@@ -41,9 +41,9 @@ def _replace_database_name(database_name: str, url: str) -> str:
     Invariant : le DSN du projet se termine par ``/<nom_de_base>`` sans
     paramètres de requête — la substitution par découpe est déterministe.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     base_url: str
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Découper sur le dernier « / » → autorité conservée, base remplacée
     base_url = url.rsplit("/", 1)[0]
@@ -58,10 +58,10 @@ async def _create_database_if_missing() -> None:
       AUTOCOMMIT sur la base d'administration ``postgres`` ;
     - la création n'est tentée que si la base est réellement absente.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     admin_engine: AsyncEngine
     existing: int | None
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Ouvrir un moteur AUTOCOMMIT sur la base postgres → DDL hors transaction
     admin_engine = create_async_engine(
@@ -91,11 +91,11 @@ async def client(db_engine: AsyncEngine) -> AsyncIterator[AsyncClient]:
       démarrage applicatif, aucun ``create_all`` implicite ;
     - chaque requête HTTP obtient sa propre session, comme en production.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     app: FastAPI
     factory: async_sessionmaker[AsyncSession]
     test_client: AsyncClient
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Assembler l'application et la factory de test → app isolée de la dev
     app = create_app()
@@ -126,9 +126,9 @@ async def db_engine() -> AsyncIterator[AsyncEngine]:
     - les migrations Alembic sont validées séparément par le gate du jalon
       (``make db-migrate``), pas par la suite de tests (D10).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     engine: AsyncEngine
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Garantir l'existence de la base de test → CREATE DATABASE si besoin
     await _create_database_if_missing()
@@ -152,10 +152,10 @@ async def db_session(db_engine: AsyncEngine) -> AsyncIterator[AsyncSession]:
     ``expire_on_commit=False``) — les tests observent le comportement exact
     des services.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     factory: async_sessionmaker[AsyncSession]
     session: AsyncSession
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Construire la factory liée au moteur de test → réglages applicatifs répliqués
     factory = async_sessionmaker(bind=db_engine, autoflush=False, expire_on_commit=False)

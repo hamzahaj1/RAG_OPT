@@ -182,12 +182,12 @@ def build_fixture_corpus(root: Path) -> Path:
     chemins ``app/core``, ``app/domains/<d>``, ``app/scripts``) pour que
     la qualification des modules soit identique à la production.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     app_dir: Path
     contents: dict[str, str]
     relative: str
     target: Path
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Décrire l'arborescence complète → un contenu par chemin relatif
     app_dir = root / "app"

@@ -23,12 +23,12 @@ from tests.unit.corpus_fixtures import build_fixture_corpus
 
 def test_double_generation_yields_identical_topology(tmp_path: Path) -> None:
     """Deux générations sur corpus inchangé = TOPOLOGY.yaml identique (SC-002)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     app_dir: Path
     changed_second: list[str]
     first_bytes: bytes
     topology_path: Path
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Générer une première fois → référence octet pour octet
     app_dir = build_fixture_corpus(tmp_path)
@@ -44,10 +44,10 @@ def test_double_generation_yields_identical_topology(tmp_path: Path) -> None:
 
 def test_missing_file_marker_fails_explicitly(tmp_path: Path) -> None:
     """Un fichier cible sans marqueur ``# [FILE]`` est un échec nommé, pas un silence."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     app_dir: Path
     models_path: Path
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Priver un modèle de son marqueur → ancrage impossible
     app_dir = build_fixture_corpus(tmp_path)
@@ -63,12 +63,12 @@ def test_missing_file_marker_fails_explicitly(tmp_path: Path) -> None:
 
 def test_model_blocks_carry_delete_policies(tmp_path: Path) -> None:
     """``fks`` et ``referenced_by`` portent les politiques ondelete par arête."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     app_dir: Path
     comments_text: str
     tasks_text: str
     users_text: str
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Générer la structure → blocs [MODEL] posés sur les trois modèles
     app_dir = build_fixture_corpus(tmp_path)
@@ -101,10 +101,10 @@ def test_model_blocks_carry_delete_policies(tmp_path: Path) -> None:
 
 def test_schema_block_fields_and_anchor(tmp_path: Path) -> None:
     """Le bloc [SCHEMA] suit immédiatement ``# [FILE]`` avec ses trois champs."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     app_dir: Path
     lines: list[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Générer la structure → bloc [SCHEMA] ancré sous le marqueur
     app_dir = build_fixture_corpus(tmp_path)
@@ -126,11 +126,11 @@ def test_schema_block_fields_and_anchor(tmp_path: Path) -> None:
 
 def test_stale_block_is_replaced_without_accumulation(tmp_path: Path) -> None:
     """Un bloc [MODEL] périmé est intégralement remplacé — jamais dupliqué (R3)."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     app_dir: Path
     reference: str
     tasks_path: Path
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Générer puis corrompre la politique → bloc périmé dans le fichier
     app_dir = build_fixture_corpus(tmp_path)

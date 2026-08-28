@@ -71,9 +71,9 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     - the factory must have been bound to an engine at startup
       (lifespan), otherwise opening a session fails.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     session: AsyncSession
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Open a session from the factory → session bound to the current engine
     async with async_session_factory() as session:
@@ -97,9 +97,9 @@ def init_db_engine() -> AsyncEngine:
     - no ping is emitted here: an invalid DSN only fails at the first
       real connection (schema synchronization at startup).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     engine: AsyncEngine
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Build the engine from the DSN → engine ready, no connection opened
     engine = create_async_engine(

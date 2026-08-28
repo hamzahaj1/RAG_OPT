@@ -59,9 +59,9 @@ def _format_block(
     dernier — listes triées ASCII, ``none`` si vide, plafond de
     ``HEADER_LIST_CAP`` entrées avec repli en synthèse déterministe.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     lines: list[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Assembler champs et marqueurs → signal sémantique d'abord, annuaire ensuite
     lines = [HEADER_OPEN]
@@ -91,10 +91,10 @@ def _format_call_field(label: str, direction: str, values: list[str]) -> list[st
     « N {direction} calls — M domains (liste triée) — details:
     TOPOLOGY.yaml » ; le graphe intégral reste dans ``TOPOLOGY.yaml``.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     domains: list[str]
     summary: str
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Garder la liste courte telle quelle → cas nominal inchangé
     if len(values) <= HEADER_LIST_CAP:
@@ -115,11 +115,11 @@ def _module_functions(path: Path) -> list[tuple[str, int]]:
     L'ancrage est la première ligne du bloc décoré — le point exact où le
     bloc [RAG] s'insère (plan § Formats).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     functions: list[tuple[str, int]]
     statement: ast.stmt
     tree: ast.Module
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Parser le fichier et relever chaque fonction → ancrages exacts
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
@@ -144,10 +144,10 @@ def _splice_block(lines: list[str], anchor_index: int, block: list[str]) -> None
     l'ancrage est intégralement retiré avant réinsertion — jamais
     d'accumulation, quel que soit son contenu antérieur.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     open_index: int
     start: int
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Retirer le bloc existant adjacent → ancrage ramené à nu
     start = anchor_index
@@ -172,7 +172,7 @@ def annotate_corpus(app_dir: Path) -> list[str]:
       vide (FR-002, cible ``rag-check``) ;
     - un fichier n'est réécrit que si son contenu change (diffs stables).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     block: list[str]
     changed: list[str]
     graph: corpus_analysis.CorpusGraph
@@ -182,7 +182,7 @@ def annotate_corpus(app_dir: Path) -> list[str]:
     nodes: list[corpus_analysis.FunctionNode]
     original: str
     path: Path
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Analyser le corpus → graphe résolu, source unique des en-têtes
     graph = corpus_analysis.analyze_corpus(app_dir)
@@ -222,14 +222,14 @@ def format_field(label: str, value: str) -> list[str]:
     API partagée : le générateur structurel (jalon 11) consomme le même
     repli pour les blocs [MODEL]/[SCHEMA] — une seule définition du format.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     current: str
     cut: int
     lines: list[str]
     segment: str
     segments: list[str]
     wrapped: list[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Retourner tel quel un champ court → cas nominal sans repli
     current = f"# {label}: {value}"
@@ -275,9 +275,9 @@ def main() -> None:
       exact (FR-007) — aucun en-tête partiel n'est écrit dans ce cas ;
     - la sortie liste les fichiers modifiés (vide = corpus déjà à jour).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     changed: list[str]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Annoter le corpus → échec explicite propagé en code retour 1
     try:

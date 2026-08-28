@@ -33,13 +33,13 @@ async def _snapshot(db: AsyncSession) -> dict[str, object]:
     Invariant : deux états identiques produisent deux photographies
     égales — la comparaison d'égalité suffit au test d'idempotence.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     comments: list[Comment]
     organizations: list[Organization]
     projects: list[Project]
     tasks: list[Task]
     users: list[User]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Charger les cinq tables → état complet en mémoire
     comments = list((await db.scalars(select(Comment))).all())
@@ -67,11 +67,11 @@ async def test_seed_covers_graph_and_enums(db_session: AsyncSession) -> None:
     assignées, au moins une tâche portant deux commentaires — les 6 arêtes
     FK sont matérialisées par les lignes elles-mêmes (colonnes NOT NULL).
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     comments_per_task: Counter[int]
     snapshot: dict[str, object]
     tasks: list[Task]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Semer une fois puis photographier → volumes exacts du plan
     await seed_database(db_session)
@@ -99,10 +99,10 @@ async def test_seed_twice_produces_identical_state(db_session: AsyncSession) -> 
     aucune erreur et laisse comptes et clés naturelles inchangés — le
     get-or-create par clé naturelle (D11) absorbe intégralement le rejeu.
     """
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     first: dict[str, object]
     second: dict[str, object]
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Semer une première fois → état de référence photographié
     await seed_database(db_session)

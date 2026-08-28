@@ -24,9 +24,9 @@ VALID_PAYLOAD: dict[str, str | int] = {
 
 def test_organization_create_accepts_valid_payload() -> None:
     """Un payload complet et conforme produit un schéma fidèle au contrat."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     schema: OrganizationCreate
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Valider le payload de référence → tous les champs typés et normalisés
     schema = OrganizationCreate.model_validate(VALID_PAYLOAD)
@@ -50,9 +50,9 @@ def test_organization_create_rejects_name_longer_than_max() -> None:
 
 def test_organization_update_accepts_empty_payload() -> None:
     """``OrganizationUpdate`` vide est valide : un PATCH sans champ ne change rien."""
-    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    # ─── VARIABLE DECLARATION ZONE ───
     schema: OrganizationUpdate
-    # ─────────────────────────────────────────
+    # ─────────────────────────────────
 
     # [STEP 1] Valider le corps vide → tous les champs restent non renseignés
     schema = OrganizationUpdate.model_validate({})
