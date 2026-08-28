@@ -531,6 +531,44 @@ Chaque jalon doit être validé avant de passer au suivant.
 > pas, le format d'annotation doit être corrigé **avant** d'aller plus loin.
 > Il est bien moins coûteux de le découvrir sur trois fichiers que sur soixante-dix.
 
+> ✅ **Phase 3 validée le 2026-08-28 — jalons 10–13 clos** (verdict du
+> mainteneur sur la foi du relevé R4 et de la vérification directe du
+> dépôt ; T056–T083 intégralement cochés, tag `phase-3-complete`).
+>
+> - ✅ **Jalon 10 (topologie)** : `corpus_analysis.py` (analyse AST
+>   partagée) + `generate_topology_headers.py` — 0 import non résolu,
+>   en-têtes `[RAG]` sur toute fonction du corpus hors models/schemas ;
+>   amendé sur relevé R1 : sémantique d'abord, listes d'appels
+>   plafonnées à 5 avec synthèse déterministe.
+> - ✅ **Jalon 11 (structure)** : `generate_structural_metadata.py` —
+>   blocs `[MODEL]`/`[SCHEMA]`, `TOPOLOGY.yaml` déterministe octet pour
+>   octet ; amendé sur relevé R1 : synthèse générée en tête de bloc.
+> - ✅ **Jalon 12 (contrats)** : `CONTRACTS.md` — les 6 arêtes FK
+>   cross-domaines documentées depuis les sources exclusives, une
+>   section d'arête = un chunk (corpus indexable au jalon 18).
+> - ✅ **Jalon 13 (test RAG précoce)** : joué en **quatre relevés
+>   gouvernés** (protocole figé, critères binaires, échecs documentés
+>   comme résultats, jamais de réécriture de relevé) : **R1**
+>   (MiniLM-L12, corpus initial) ÉCHEC Q1-B et Q2-A — hypothèse de
+>   troncature de fenêtre ; **R2** (format J10+J11 régénéré) ÉCHEC
+>   persistant, progression monotone des deux attendus ; **R3**
+>   (`multilingual-e5-large` + préfixes `query:`/`passage:`, seule
+>   variable changée) Q2 résolue — `get_db` rang 1 —, Q1-B à 0.0018 du
+>   seuil ; **R4** (corpus et questions anglais, politique §4 ter)
+>   **SUCCÈS INTÉGRAL** — les quatre critères binaires vrais,
+>   `User [MODEL]` rang 3, `get_db` rang 1 confirmé.
+>
+> **Enseignement pour la phase 5 — hiérarchie des leviers de retrieval,
+> mesurée à variables gelées** : le **format** d'annotation (R1 → R2)
+> produit des gains réels mais ne franchit pas les seuils ; le
+> **modèle** (R2 → R3, fenêtre 512 tokens) résout ce que la troncature
+> cassait ; la **langue** (R3 → R4, alignement corpus/questions sur
+> l'anglais) franchit le dernier seuil. Ordre d'importance constaté :
+> **format < modèle < langue** — les leviers sont cumulatifs, aucun ne
+> régresse les acquis du précédent. En clôture, la géométrie du corpus
+> est intégralement anglaise (synthèses, docstrings, `[STEP]`,
+> `CONTRACTS.md`, marqueurs de zone — amendement §6).
+
 ### Phase 4 — Frontend
 
 | # | Jalon | Livrable | Validation |
