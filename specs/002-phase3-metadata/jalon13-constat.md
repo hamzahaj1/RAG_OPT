@@ -6,8 +6,9 @@ linguistique du corpus (lots a–c) et amendement des questions —
 **SUCCÈS INTÉGRAL sur les deux questions** (Q1 : critères A et B vrais,
 `User [MODEL]` au rang 3 ; Q2 : critères A et B vrais, `get_db` au
 rang 1) — premier relevé du jalon où les quatre critères sont vrais ;
-**exécution arrêtée après R4** conformément au séquencement (CLAUDE.md
-§4 ter), verdict de clôture du jalon au mainteneur
+**verdict du mainteneur (2026-08-28) : jalon 13 RÉUSSI**, sur la foi du
+relevé R4 et de la vérification directe du dépôt — phase 3 close
+(gate T082, commit T083)
 
 > **Le constat est le livrable.** Un échec proprement documenté vaut
 > mieux qu'un succès arrangé — c'est toute la raison d'être du jalon
@@ -427,6 +428,13 @@ intégralement exécuté — R3, lots a–c, amendement des questions, R4.
 l'instruction, **l'exécution s'arrête ici**. La clôture du jalon 13
 (gate, mise à jour de CLAUDE.md §8) est une décision du mainteneur, sur
 la foi du présent constat.
+
+**Verdict de clôture (2026-08-28)** : le mainteneur prononce le
+**jalon 13 RÉUSSI** sur la foi du relevé R4 et de la vérification
+directe du dépôt. En clôture : amendement §6 (marqueurs de zone en
+anglais, dernier résidu français des chunks — commits `26a4b8d` et
+`a8afe9d`), gate T082 complet vert, commit T083, encart de validation
+de la phase 3 dans CLAUDE.md §8.
 
 ### Pistes de correction possibles (identifiées à R1 — NON exécutées alors, statut mis à jour)
 

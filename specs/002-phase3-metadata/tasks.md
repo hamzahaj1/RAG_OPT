@@ -215,7 +215,7 @@ montrant `Depends(get_db)`) **et** `app/domains/users/models.py`
 - [x] **T080** [J13] Exécution **Q2** : classement top-5 complet relevé,
       présence/rang des attendus (`get_db` CRITICAL_CORE multi-domaines,
       endpoint avec `Depends(get_db)`) constatés.
-- [ ] **T081** [J13] **CONSTAT DOCUMENTÉ** —
+- [x] **T081** [J13] **CONSTAT DOCUMENTÉ** —
       `specs/002-phase3-metadata/jalon13-constat.md` : protocole (échantillon,
       modèle, k), résultat top-k **question par question** (classement
       intégral, attendus présents/absents avec leur rang), verdict motivé
@@ -224,10 +224,10 @@ montrant `Depends(get_db)`) **et** `app/domains/users/models.py`
       d'annotation (retour jalons 10–11), régénération `rag-annotate`,
       re-test — **avant toute généralisation** ; l'échec est un résultat
       documenté, pas une exception.
-- [ ] **T082** [J13] **GATE 13** : `make rag-check` vert ; pytest intégral ;
+- [x] **T082** [J13] **GATE 13** : `make rag-check` vert ; pytest intégral ;
       MyPy `--strict` ; Ruff `check` + `format --check` ; constat T081
       versionné.
-- [ ] **T083** [J13] **COMMIT de gate du jalon 13** — **clôture de la
+- [x] **T083** [J13] **COMMIT de gate du jalon 13** — **clôture de la
       phase 3** ; mise à jour du bloc de validation phase 3 dans CLAUDE.md
       (amendement de gouvernance en commit distinct si rédigé séparément).
 
