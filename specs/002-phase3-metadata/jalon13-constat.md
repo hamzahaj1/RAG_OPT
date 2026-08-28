@@ -1,9 +1,11 @@
 # Jalon 13 — Constat du test RAG précoce
 
 **Branch**: `002-phase3-metadata` | **Protocole consigné le**: 2026-08-28
-| **Statut**: relevé R1 exécuté le 2026-08-28 — **ÉCHEC partiel sur les
-deux questions ; exécution arrêtée avant toute correction** (protocole
-§5), hypothèse de cause en attente de validation
+| **Statut**: relevé R2 exécuté le 2026-08-28 après boucles J10+J11
+(pistes 2 et 3 validées) — **ÉCHEC persistant sur les deux mêmes
+critères, progression mesurable ; exécution arrêtée** (protocole §5),
+la piste 4 (modèle à fenêtre longue) est la réserve de gouvernance à
+instruire
 
 > **Le constat est le livrable.** Un échec proprement documenté vaut
 > mieux qu'un succès arrangé — c'est toute la raison d'être du jalon
@@ -155,7 +157,83 @@ natural-language content); `users.router.create_user [RAG]` 595 / 75 /
 ~128-token window. Qualified dotted identifiers tokenize expensively,
 so real token counts exceed the word-based estimates.
 
-### Pistes de correction possibles (NON exécutées — en attente d'arbitrage)
+### Relevé R2 — 2026-08-28 (`python -m scripts.rag_probe`, après boucles J10+J11)
+
+**Corrections appliquées avant R2** (pistes 2 et 3 validées par le
+mainteneur ; piste 1 rejetée — masque le format ; piste 4 en réserve de
+gouvernance) : en-têtes `[RAG]` réordonnés (signature, tier, weight,
+reads, mutates, puis calls/called_by) et listes d'appels plafonnées à 5
+avec synthèse déterministe (commit `5bb6d0d`) — le chunk `get_db` passe
+de 1 692 à **998 caractères**, docstring au caractère **345** ; synthèse
+française générée en tête de `[MODEL]`/`[SCHEMA]` (commit `48a2885`).
+**Aucune variable de sonde modifiée** : mêmes questions verbatim, même
+modèle, même k, même échantillon — seul le corpus régénéré change.
+Inventaire inchangé : 19 chunks, mêmes identifiants.
+
+**Q1 — « que se passe-t-il quand on supprime un utilisateur ? »**
+
+| Rang | Score | Chunk |
+|---|---|---|
+| 1 | 0.5592 | `users.services.delete_user [RAG]` |
+| 2 | 0.5174 | `users.router.delete_user [RAG]` |
+| 3 | 0.4523 | `users.services.get_user [RAG]` |
+| 4 | 0.4388 | `users.services.update_user [RAG]` |
+| 5 | 0.4163 | `users.router.update_user [RAG]` |
+
+Aucune égalité à 4 décimales.
+Critère A : **VRAI** (rang 1). Critère B : **FAUX** —
+`users.models.User [MODEL]` au rang **9**/19 (0.3622).
+
+**Q2 — « comment une requête HTTP obtient-elle une session de base de
+données ? »**
+
+| Rang | Score | Chunk |
+|---|---|---|
+| 1 | 0.3962 | `users.router.create_user [RAG]` |
+| 2 | 0.3929 | `users.router.get_user [RAG]` |
+| 3 | 0.3779 | `users.services.get_user [RAG]` |
+| 4 | 0.3645 | `users.services.create_user [RAG]` |
+| 5 | 0.3628 | `users.router.list_users [RAG]` |
+
+Aucune égalité à 4 décimales.
+Critère A : **FAUX** — `core.database.get_db [RAG]` au rang **6**/19
+(0.3552, à **0.0076** du rang 5). Critère B : **VRAI** (rangs 1, 2, 5).
+
+**Verdict R2 : ÉCHEC persistant** (Q1-B, Q2-A) — mêmes critères qu'en
+R1. Progression objective des deux attendus :
+
+- `get_db` sur Q2 : hors top-5 (R1) → **rang 6**, à 0.0076 du seuil —
+  l'hypothèse de troncature était juste mais la correction ne suffit pas
+  à franchir le seuil avec ce modèle ;
+- l'anomalie R1 (`users.models.User [MODEL]` rang 1 sur Q2) a
+  **disparu** (rang 11) — la synthèse française a corrigé la
+  représentation dominée par les identifiants ;
+- `users.models.User [MODEL]` sur Q1 : hors top-5 (R1) → rang 9.
+
+### [DIAGNOSTIC] 2026-08-28 — R2 measurement notes (English, per protocol §1)
+
+Full-ranking positions (19 chunks): Q1 → `User [MODEL]` 9th (0.3622),
+`get_db` 17th; Q2 → `get_db` 6th (0.3552, gap to 5th = 0.0076),
+`User [MODEL]` 11th, `init_db_engine` 19th. The `get_db` chunk now
+contains 13 occurrences of "session" within 998 chars, docstring at
+char 345 — yet scores only 0.3552 against a near-verbatim French
+question. Residual causes point at the **pinned model's capacity**, not
+the format: mean pooling over ~250 mostly-code tokens dilutes the
+4-line docstring; minor lexical gap ("session DB" vs « base de
+données »). Both failing targets improved monotonically across
+R1 → R2 under frozen probe variables.
+
+### Suite (gouvernance)
+
+La boucle de format (pistes 2–3) a produit un progrès mesurable mais
+insuffisant sous le modèle épinglé. Conformément à l'arbitrage du
+2026-08-28, **la piste 4 — modèle à fenêtre longue
+(`intfloat/multilingual-e5-large`, 512 tokens) — est la réserve à
+instruire comme décision de gouvernance** (changement d'une variable
+gelée du protocole). Aucune autre correction n'est engagée sans
+validation.
+
+### Pistes de correction possibles (identifiées à R1 — NON exécutées alors, statut mis à jour)
 
 1. **Composition du texte vectorisé** (correction côté sonde, format
    sur disque inchangé) : embarquer docstring + signature + champs
