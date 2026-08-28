@@ -569,7 +569,26 @@ Chaque jalon doit être validé avant de passer au suivant.
 > est intégralement anglaise (synthèses, docstrings, `[STEP]`,
 > `CONTRACTS.md`, marqueurs de zone — amendement §6).
 
-### Phase 4 — Frontend
+> **Inversion des phases 4 et 5 — décision de gouvernance du
+> 2026-08-28** (à la clôture de la phase 3). L'ordre d'exécution
+> devient : **phase 5 (le tireur, jalons 18–20) puis phase 4 (frontend,
+> jalons 14–17)**. Raison consignée : le frontend est hors corpus
+> indexable (§4 bis) et hors périmètre des scripts AST ; les
+> enseignements du jalon 13 (format < modèle < langue) alimentent
+> directement les jalons 18–19 ; principe directeur n°4 — validation
+> précoce de l'objet central avant accumulation périphérique. La
+> numérotation des phases et des jalons est conservée ; les sections
+> ci-dessous sont présentées dans l'ordre d'exécution.
+
+### Phase 5 — Le tireur *(exécutée en premier)*
+
+| # | Jalon | Livrable | Validation |
+|---|---|---|---|
+| 18 | Indexation | Pipeline d'ingestion AST → vecteurs | Le corpus complet est indexé |
+| 19 | GraphRAG | Graphe de code + retrieval | Requêtes structurelles correctes |
+| 20 | Boucle agentique | Génération + test + auto-correction en sandbox | Taux d'erreur mesuré et décroissant |
+
+### Phase 4 — Frontend *(exécutée après la phase 5)*
 
 | # | Jalon | Livrable | Validation |
 |---|---|---|---|
@@ -577,14 +596,6 @@ Chaque jalon doit être validé avant de passer au suivant.
 | 15 | Couche API | Clients Axios, types TS, hooks TanStack Query | Un GET affiche des données réelles |
 | 16 | Pages CRUD | Dashboard, organizations, projects, tasks, comments | CRUD complet depuis l'UI |
 | 17 | Intégration | CORS, proxy Vite, Docker Compose unifié | `make up` lance tout |
-
-### Phase 5 — Le tireur
-
-| # | Jalon | Livrable | Validation |
-|---|---|---|---|
-| 18 | Indexation | Pipeline d'ingestion AST → vecteurs | Le corpus complet est indexé |
-| 19 | GraphRAG | Graphe de code + retrieval | Requêtes structurelles correctes |
-| 20 | Boucle agentique | Génération + test + auto-correction en sandbox | Taux d'erreur mesuré et décroissant |
 
 ---
 
