@@ -34,14 +34,13 @@ def test_call_lists_capped_with_deterministic_synthesis() -> None:
         "users.router.list_users",
         "users.router.update_user",
     ]
-    rendered = generate_topology_headers._format_call_field("called_by", "entrants", values)
+    rendered = generate_topology_headers._format_call_field("called_by", "inbound", values)
     assert rendered == [
-        "# called_by: 6 appels entrants — 2 domaines (organizations, users) — détail :"
-        " TOPOLOGY.yaml"
+        "# called_by: 6 inbound calls — 2 domains (organizations, users) — details: TOPOLOGY.yaml"
     ]
 
     # [STEP 2] Rester sous le plafond → liste inchangée, cas nominal préservé
-    assert generate_topology_headers._format_call_field("calls", "sortants", values[:2]) == [
+    assert generate_topology_headers._format_call_field("calls", "outbound", values[:2]) == [
         "# calls: " + ", ".join(values[:2])
     ]
 

@@ -1,6 +1,6 @@
 # [FILE] — app/domains/projects/models.py
 # [MODEL]
-# synthese: Un Project est référencé par tasks.project_id (CASCADE — suppression en cascade).
+# synthesis: A Project is referenced by tasks.project_id (CASCADE — cascade-deleted).
 # entity: Project
 # table: projects
 # columns: created_at, description, id, name, organization_id, updated_at

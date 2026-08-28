@@ -1,6 +1,6 @@
 # [FILE] — app/domains/organizations/models.py
 # [MODEL]
-# synthese: Un Organization est référencé par projects.organization_id (RESTRICT — blocage).
+# synthesis: A Organization is referenced by projects.organization_id (RESTRICT — blocked).
 # entity: Organization
 # table: organizations
 # columns: created_at, id, name, owner_id, updated_at

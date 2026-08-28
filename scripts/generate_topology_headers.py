@@ -71,11 +71,11 @@ def _format_block(
     lines.extend(format_list_field("reads", sorted(graph.reads.get(node.qualified, set()))))
     lines.extend(format_list_field("mutates", sorted(graph.mutates.get(node.qualified, set()))))
     lines.extend(
-        _format_call_field("calls", "sortants", corpus_analysis.calls_of(graph, node.qualified))
+        _format_call_field("calls", "outbound", corpus_analysis.calls_of(graph, node.qualified))
     )
     lines.extend(
         _format_call_field(
-            "called_by", "entrants", corpus_analysis.called_by_of(graph, node.qualified)
+            "called_by", "inbound", corpus_analysis.called_by_of(graph, node.qualified)
         )
     )
     lines.append(HEADER_CLOSE)
@@ -85,9 +85,10 @@ def _format_block(
 def _format_call_field(label: str, direction: str, values: list[str]) -> list[str]:
     """Rend un champ d'appels plafonné — liste courte ou synthèse déterministe.
 
-    Règle (plan § Formats, amendement J10) : au-delà de
+    Règle (plan § Formats, amendement J10 ; gabarit anglais depuis la
+    politique de langue CLAUDE.md §4 ter) : au-delà de
     ``HEADER_LIST_CAP`` entrées, l'en-tête porte le résumé
-    « N appels {direction} — M domaines (liste triée) — détail :
+    « N {direction} calls — M domains (liste triée) — details:
     TOPOLOGY.yaml » ; le graphe intégral reste dans ``TOPOLOGY.yaml``.
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
@@ -102,8 +103,8 @@ def _format_call_field(label: str, direction: str, values: list[str]) -> list[st
     # [STEP 2] Replier en synthèse déterministe → l'en-tête reste un résumé
     domains = sorted({value.split(".")[0] for value in values})
     summary = (
-        f"{len(values)} appels {direction} — {len(domains)} domaine"
-        f"{'s' if len(domains) > 1 else ''} ({', '.join(domains)}) — détail : TOPOLOGY.yaml"
+        f"{len(values)} {direction} calls — {len(domains)} domain"
+        f"{'s' if len(domains) > 1 else ''} ({', '.join(domains)}) — details: TOPOLOGY.yaml"
     )
     return format_field(label, summary)
 

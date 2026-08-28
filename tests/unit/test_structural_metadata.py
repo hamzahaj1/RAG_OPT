@@ -89,14 +89,14 @@ def test_model_blocks_carry_delete_policies(tmp_path: Path) -> None:
     assert "# referenced_by: comments.task_id -> CASCADE" in tasks_text
     assert "# entity: User\n# table: users" in users_text
 
-    # [STEP 4] Vérifier les synthèses françaises générées → gabarit et gloses figés (J11)
+    # [STEP 4] Vérifier les synthèses anglaises générées → gabarit et gloses figés (J11, §4 ter)
     assert (
-        "# synthese: Un User est référencé par comments.author_id (RESTRICT — blocage),"
+        "# synthesis: A User is referenced by comments.author_id (RESTRICT — blocked),"
         in users_text
     )
-    assert "tasks.assignee_id (SET NULL — désassignation)." in users_text
-    assert "# synthese: Un Comment n'est référencé par aucune table." in comments_text
-    assert "# synthese: Un Task est référencé par comments.task_id" in tasks_text
+    assert "tasks.assignee_id (SET NULL — unassigned)." in users_text
+    assert "# synthesis: A Comment is not referenced by any table." in comments_text
+    assert "# synthesis: A Task is referenced by comments.task_id" in tasks_text
 
 
 def test_schema_block_fields_and_anchor(tmp_path: Path) -> None:
@@ -115,7 +115,8 @@ def test_schema_block_fields_and_anchor(tmp_path: Path) -> None:
     assert lines[0].startswith("# [FILE]")
     assert lines[1] == "# [SCHEMA]"
     assert lines[2] == (
-        "# synthese: Le schéma Pydantic du domaine users porte le contrat de l'entité User."
+        "# synthesis: The Pydantic schema of the users domain carries the contract"
+        " of the User entity."
     )
     assert lines[3] == "# domain: users"
     assert lines[4] == "# schemas: UserCreate(BaseModel)"

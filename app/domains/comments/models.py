@@ -1,6 +1,6 @@
 # [FILE] — app/domains/comments/models.py
 # [MODEL]
-# synthese: Un Comment n'est référencé par aucune table.
+# synthesis: A Comment is not referenced by any table.
 # entity: Comment
 # table: comments
 # columns: author_id, content, created_at, id, task_id, updated_at

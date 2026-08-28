@@ -1,6 +1,6 @@
 # [FILE] — app/domains/projects/schemas.py
 # [SCHEMA]
-# synthese: Les 4 schémas Pydantic du domaine projects portent le contrat de l'entité Project.
+# synthesis: The 4 Pydantic schemas of the projects domain carry the contract of the Project entity.
 # domain: projects
 # schemas: ProjectBase(BaseModel), ProjectCreate(ProjectBase), ProjectRead(ProjectBase),
 #   ProjectUpdate(BaseModel)

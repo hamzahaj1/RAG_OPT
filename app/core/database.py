@@ -58,8 +58,8 @@ async_session_factory: async_sessionmaker[AsyncSession] = async_sessionmaker(
 # reads: none
 # mutates: none
 # calls: none
-# called_by: 25 appels entrants — 5 domaines (comments, organizations, projects, tasks,
-#   users) — détail : TOPOLOGY.yaml
+# called_by: 25 inbound calls — 5 domains (comments, organizations, projects, tasks,
+#   users) — details: TOPOLOGY.yaml
 # [/RAG]
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Fournit une session DB par requête HTTP (dépendance FastAPI).

@@ -1,6 +1,6 @@
 # [FILE] — app/domains/tasks/models.py
 # [MODEL]
-# synthese: Un Task est référencé par comments.task_id (CASCADE — suppression en cascade).
+# synthesis: A Task is referenced by comments.task_id (CASCADE — cascade-deleted).
 # entity: Task
 # table: tasks
 # columns: assignee_id, created_at, description, id, priority, project_id, status, title, updated_at

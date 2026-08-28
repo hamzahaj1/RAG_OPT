@@ -13,7 +13,8 @@ successives sur un code inchangé laissent l'arbre strictement identique.
 Le champ ``referenced_by`` des blocs [MODEL] porte la politique
 ``ondelete`` de chaque arête entrante — le signal RAG des questions de
 suppression du jalon 13. Amendement J11 (relevé R1) : la première ligne
-de chaque bloc est une **synthèse en français généré**, déterministe
+de chaque bloc est une **synthèse générée en anglais** (clé
+``synthesis`` — politique de langue CLAUDE.md §4 ter), déterministe
 depuis les données FK (gabarit et gloses figés au plan § Formats),
 jamais rédigée à la main.
 
@@ -45,9 +46,9 @@ SCHEMA_CLOSE: str = "# [/SCHEMA]"
 SCHEMA_OPEN: str = "# [SCHEMA]"
 
 POLICY_GLOSSES: dict[str, str] = {
-    "CASCADE": "suppression en cascade",
-    "RESTRICT": "blocage",
-    "SET NULL": "désassignation",
+    "CASCADE": "cascade-deleted",
+    "RESTRICT": "blocked",
+    "SET NULL": "unassigned",
 }
 
 TOPOLOGY_FILENAME: str = "TOPOLOGY.yaml"
@@ -82,10 +83,10 @@ def _format_model_block(
     lines: list[str]
     # ─────────────────────────────────────────
 
-    # [STEP 1] Assembler champs et marqueurs → synthèse française en tête (J11)
+    # [STEP 1] Assembler champs et marqueurs → synthèse anglaise en tête (J11, §4 ter)
     lines = [MODEL_OPEN]
     lines.extend(
-        format_field("synthese", _synthesis_of_model(model, referenced_by.get(model.table, [])))
+        format_field("synthesis", _synthesis_of_model(model, referenced_by.get(model.table, [])))
     )
     lines.extend(format_field("entity", model.entity))
     lines.extend(format_field("table", model.table))
@@ -108,9 +109,9 @@ def _format_schema_block(domain: str, classes: tuple[str, ...], entity: str) -> 
     lines: list[str]
     # ─────────────────────────────────────────
 
-    # [STEP 1] Assembler champs et marqueurs → synthèse française en tête (J11)
+    # [STEP 1] Assembler champs et marqueurs → synthèse anglaise en tête (J11, §4 ter)
     lines = [SCHEMA_OPEN]
-    lines.extend(format_field("synthese", _synthesis_of_schema(domain, classes, entity)))
+    lines.extend(format_field("synthesis", _synthesis_of_schema(domain, classes, entity)))
     lines.extend(format_field("domain", domain))
     lines.extend(format_list_field("schemas", list(classes)))
     lines.extend(format_field("entity", entity))
@@ -186,12 +187,13 @@ def _splice_file_blocks(
 
 
 def _synthesis_of_model(model: corpus_analysis.ModelInfo, referenced: list[str]) -> str:
-    """Synthèse française d'un modèle, générée depuis ses arêtes entrantes.
+    """Synthèse anglaise d'un modèle, générée depuis ses arêtes entrantes.
 
-    Gabarit figé (plan § Formats, amendement J11) : « Un {Entité} est
-    référencé par {table.colonne} ({politique} — {glose}), … » — gloses
-    figées par ``POLICY_GLOSSES`` ; sans arête entrante : « Un {Entité}
-    n'est référencé par aucune table. » Jamais rédigée à la main.
+    Gabarit figé (plan § Formats, amendement J11, langue §4 ter) :
+    « A {Entity} is referenced by {table.column} ({policy} — {gloss}),
+    … » — gloses figées par ``POLICY_GLOSSES`` ; sans arête entrante :
+    « A {Entity} is not referenced by any table. » Jamais rédigée à la
+    main.
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     parts: list[str]
@@ -201,20 +203,21 @@ def _synthesis_of_model(model: corpus_analysis.ModelInfo, referenced: list[str])
 
     # [STEP 1] Rendre chaque arête entrante avec sa glose → phrase déterministe
     if not referenced:
-        return f"Un {model.entity} n'est référencé par aucune table."
+        return f"A {model.entity} is not referenced by any table."
     parts = []
     for entry in referenced:
         source, policy = entry.split(" -> ")
         parts.append(f"{source} ({policy} — {POLICY_GLOSSES.get(policy, policy)})")
-    return f"Un {model.entity} est référencé par {', '.join(parts)}."
+    return f"A {model.entity} is referenced by {', '.join(parts)}."
 
 
 def _synthesis_of_schema(domain: str, classes: tuple[str, ...], entity: str) -> str:
-    """Synthèse française d'un module de schémas — comptage et entité.
+    """Synthèse anglaise d'un module de schémas — comptage et entité.
 
-    Gabarit figé (plan § Formats, amendement J11) : « Le(s) {n} schéma(s)
-    Pydantic du domaine {domaine} porte(nt) le contrat de l'entité
-    {Entité}. » — accord déterministe sur le comptage.
+    Gabarit figé (plan § Formats, amendement J11, langue §4 ter) :
+    « The {n} Pydantic schemas of the {domain} domain carry the contract
+    of the {Entity} entity. » — accord déterministe du verbe sur le
+    comptage (« carries » au singulier).
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     head: str
@@ -222,9 +225,9 @@ def _synthesis_of_schema(domain: str, classes: tuple[str, ...], entity: str) -> 
     # ─────────────────────────────────────────
 
     # [STEP 1] Accorder tête et verbe sur le comptage → phrase déterministe
-    head = "Le schéma Pydantic" if len(classes) == 1 else f"Les {len(classes)} schémas Pydantic"
-    verb = "porte" if len(classes) == 1 else "portent"
-    return f"{head} du domaine {domain} {verb} le contrat de l'entité {entity}."
+    head = "The Pydantic schema" if len(classes) == 1 else f"The {len(classes)} Pydantic schemas"
+    verb = "carries" if len(classes) == 1 else "carry"
+    return f"{head} of the {domain} domain {verb} the contract of the {entity} entity."
 
 
 def _topology_payload(graph: corpus_analysis.CorpusGraph) -> dict[str, object]:
