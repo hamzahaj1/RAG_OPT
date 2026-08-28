@@ -29,12 +29,12 @@ from app.domains.users.models import User
 
 # [RAG]
 # signature: create_organization(db: AsyncSession, data: OrganizationCreate) -> Organization
-# weight: 2
 # tier: CORE
-# calls: none
-# called_by: organizations.router.create_organization, scripts.seed._ensure_organization
+# weight: 2
 # reads: organizations, users
 # mutates: organizations
+# calls: none
+# called_by: organizations.router.create_organization, scripts.seed._ensure_organization
 # [/RAG]
 async def create_organization(db: AsyncSession, data: OrganizationCreate) -> Organization:
     """Crée une organisation.
@@ -71,12 +71,12 @@ async def create_organization(db: AsyncSession, data: OrganizationCreate) -> Org
 
 # [RAG]
 # signature: delete_organization(db: AsyncSession, organization_id: int) -> None
-# weight: 2
 # tier: LEAF
-# calls: organizations.services.get_organization
-# called_by: organizations.router.delete_organization
+# weight: 2
 # reads: projects
 # mutates: organizations
+# calls: organizations.services.get_organization
+# called_by: organizations.router.delete_organization
 # [/RAG]
 async def delete_organization(db: AsyncSession, organization_id: int) -> None:
     """Supprime une organisation.
@@ -110,13 +110,13 @@ async def delete_organization(db: AsyncSession, organization_id: int) -> None:
 
 # [RAG]
 # signature: get_organization(db: AsyncSession, organization_id: int) -> Organization
-# weight: 3
 # tier: CORE
+# weight: 3
+# reads: organizations
+# mutates: none
 # calls: none
 # called_by: organizations.router.get_organization, organizations.services.delete_organization,
 #   organizations.services.update_organization
-# reads: organizations
-# mutates: none
 # [/RAG]
 async def get_organization(db: AsyncSession, organization_id: int) -> Organization:
     """Consulte une organisation par identifiant.
@@ -140,12 +140,12 @@ async def get_organization(db: AsyncSession, organization_id: int) -> Organizati
 
 # [RAG]
 # signature: list_organizations(db: AsyncSession, limit: int, offset: int) -> Sequence[Organization]
-# weight: 1
 # tier: LEAF
-# calls: none
-# called_by: organizations.router.list_organizations
+# weight: 1
 # reads: organizations
 # mutates: none
+# calls: none
+# called_by: organizations.router.list_organizations
 # [/RAG]
 async def list_organizations(db: AsyncSession, limit: int, offset: int) -> Sequence[Organization]:
     """Liste les organisations par page.
@@ -169,12 +169,12 @@ async def list_organizations(db: AsyncSession, limit: int, offset: int) -> Seque
 # [RAG]
 # signature: update_organization(db: AsyncSession, data: OrganizationUpdate,
 #   organization_id: int) -> Organization
-# weight: 2
 # tier: LEAF
-# calls: organizations.services.get_organization
-# called_by: organizations.router.update_organization
+# weight: 2
 # reads: organizations
 # mutates: organizations
+# calls: organizations.services.get_organization
+# called_by: organizations.router.update_organization
 # [/RAG]
 async def update_organization(
     db: AsyncSession, data: OrganizationUpdate, organization_id: int

@@ -29,12 +29,12 @@ router = APIRouter(prefix="/comments", tags=["comments"])
 
 # [RAG]
 # signature: create_comment(data: CommentCreate, db: AsyncSession = Depends(get_db)) -> Comment
-# weight: 2
 # tier: LEAF
-# calls: comments.services.create_comment, core.database.get_db
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: comments.services.create_comment, core.database.get_db
+# called_by: none
 # [/RAG]
 @router.post("", response_model=CommentRead, status_code=status.HTTP_201_CREATED)
 async def create_comment(data: CommentCreate, db: AsyncSession = Depends(get_db)) -> Comment:
@@ -45,12 +45,12 @@ async def create_comment(data: CommentCreate, db: AsyncSession = Depends(get_db)
 
 # [RAG]
 # signature: delete_comment(comment_id: int, db: AsyncSession = Depends(get_db)) -> None
-# weight: 2
 # tier: LEAF
-# calls: comments.services.delete_comment, core.database.get_db
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: comments.services.delete_comment, core.database.get_db
+# called_by: none
 # [/RAG]
 @router.delete("/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_comment(comment_id: int, db: AsyncSession = Depends(get_db)) -> None:
@@ -61,12 +61,12 @@ async def delete_comment(comment_id: int, db: AsyncSession = Depends(get_db)) ->
 
 # [RAG]
 # signature: get_comment(comment_id: int, db: AsyncSession = Depends(get_db)) -> Comment
-# weight: 2
 # tier: LEAF
-# calls: comments.services.get_comment, core.database.get_db
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: comments.services.get_comment, core.database.get_db
+# called_by: none
 # [/RAG]
 @router.get("/{comment_id}", response_model=CommentRead)
 async def get_comment(comment_id: int, db: AsyncSession = Depends(get_db)) -> Comment:
@@ -78,12 +78,12 @@ async def get_comment(comment_id: int, db: AsyncSession = Depends(get_db)) -> Co
 # [RAG]
 # signature: list_comments(db: AsyncSession = Depends(get_db), limit: int = Query(default=50, ge=1,
 #   le=100), offset: int = Query(default=0, ge=0), task_id: int = Query()) -> Sequence[Comment]
-# weight: 2
 # tier: LEAF
-# calls: comments.services.list_comments, core.database.get_db
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: comments.services.list_comments, core.database.get_db
+# called_by: none
 # [/RAG]
 @router.get("", response_model=list[CommentRead])
 async def list_comments(
@@ -100,12 +100,12 @@ async def list_comments(
 # [RAG]
 # signature: update_comment(comment_id: int, data: CommentUpdate,
 #   db: AsyncSession = Depends(get_db)) -> Comment
-# weight: 2
 # tier: LEAF
-# calls: comments.services.update_comment, core.database.get_db
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: comments.services.update_comment, core.database.get_db
+# called_by: none
 # [/RAG]
 @router.patch("/{comment_id}", response_model=CommentRead)
 async def update_comment(

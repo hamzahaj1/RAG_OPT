@@ -29,12 +29,12 @@ from app.domains.users.models import User
 
 # [RAG]
 # signature: create_task(db: AsyncSession, data: TaskCreate) -> Task
-# weight: 2
 # tier: CORE
-# calls: none
-# called_by: scripts.seed._ensure_task, tasks.router.create_task
+# weight: 2
 # reads: projects, users
 # mutates: tasks
+# calls: none
+# called_by: scripts.seed._ensure_task, tasks.router.create_task
 # [/RAG]
 async def create_task(db: AsyncSession, data: TaskCreate) -> Task:
     """Crée une tâche.
@@ -82,12 +82,12 @@ async def create_task(db: AsyncSession, data: TaskCreate) -> Task:
 
 # [RAG]
 # signature: delete_task(db: AsyncSession, task_id: int) -> None
-# weight: 2
 # tier: LEAF
-# calls: tasks.services.get_task
-# called_by: tasks.router.delete_task
+# weight: 2
 # reads: none
 # mutates: tasks
+# calls: tasks.services.get_task
+# called_by: tasks.router.delete_task
 # [/RAG]
 async def delete_task(db: AsyncSession, task_id: int) -> None:
     """Supprime une tâche.
@@ -112,12 +112,12 @@ async def delete_task(db: AsyncSession, task_id: int) -> None:
 
 # [RAG]
 # signature: get_task(db: AsyncSession, task_id: int) -> Task
-# weight: 3
 # tier: CORE
-# calls: none
-# called_by: tasks.router.get_task, tasks.services.delete_task, tasks.services.update_task
+# weight: 3
 # reads: tasks
 # mutates: none
+# calls: none
+# called_by: tasks.router.get_task, tasks.services.delete_task, tasks.services.update_task
 # [/RAG]
 async def get_task(db: AsyncSession, task_id: int) -> Task:
     """Consulte une tâche par identifiant.
@@ -141,12 +141,12 @@ async def get_task(db: AsyncSession, task_id: int) -> Task:
 
 # [RAG]
 # signature: list_tasks(db: AsyncSession, limit: int, offset: int) -> Sequence[Task]
-# weight: 1
 # tier: LEAF
-# calls: none
-# called_by: tasks.router.list_tasks
+# weight: 1
 # reads: tasks
 # mutates: none
+# calls: none
+# called_by: tasks.router.list_tasks
 # [/RAG]
 async def list_tasks(db: AsyncSession, limit: int, offset: int) -> Sequence[Task]:
     """Liste les tâches par page.
@@ -167,12 +167,12 @@ async def list_tasks(db: AsyncSession, limit: int, offset: int) -> Sequence[Task
 
 # [RAG]
 # signature: update_task(db: AsyncSession, data: TaskUpdate, task_id: int) -> Task
-# weight: 2
 # tier: LEAF
-# calls: tasks.services.get_task
-# called_by: tasks.router.update_task
+# weight: 2
 # reads: users
 # mutates: tasks
+# calls: tasks.services.get_task
+# called_by: tasks.router.update_task
 # [/RAG]
 async def update_task(db: AsyncSession, data: TaskUpdate, task_id: int) -> Task:
     """Modifie partiellement une tâche.

@@ -18,6 +18,34 @@ from tests.unit.corpus_fixtures import build_fixture_corpus
 # [CODE_START]
 
 
+def test_call_lists_capped_with_deterministic_synthesis() -> None:
+    """Au-delà de 5 entrées, le champ d'appels devient une synthèse (plan, J10)."""
+    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    rendered: list[str]
+    values: list[str]
+    # ─────────────────────────────────────────
+
+    # [STEP 1] Soumettre 6 appelants sur 2 domaines → résumé déterministe attendu
+    values = [
+        "organizations.router.create_organization",
+        "users.router.create_user",
+        "users.router.delete_user",
+        "users.router.get_user",
+        "users.router.list_users",
+        "users.router.update_user",
+    ]
+    rendered = generate_topology_headers._format_call_field("called_by", "entrants", values)
+    assert rendered == [
+        "# called_by: 6 appels entrants — 2 domaines (organizations, users) — détail :"
+        " TOPOLOGY.yaml"
+    ]
+
+    # [STEP 2] Rester sous le plafond → liste inchangée, cas nominal préservé
+    assert generate_topology_headers._format_call_field("calls", "sortants", values[:2]) == [
+        "# calls: " + ", ".join(values[:2])
+    ]
+
+
 def test_double_run_leaves_files_identical(tmp_path: Path) -> None:
     """Deux exécutions successives sur corpus inchangé = diff vide (FR-002)."""
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
@@ -52,10 +80,13 @@ def test_headers_inserted_with_expected_fields(tmp_path: Path) -> None:
     services_text = (app_dir / "domains/users/services.py").read_text(encoding="utf-8")
     router_text = (app_dir / "domains/users/router.py").read_text(encoding="utf-8")
 
-    # [STEP 2] Vérifier le contenu du bloc service → champs en ordre fixe, valeurs exactes
-    assert "# [RAG]\n# signature: create_user(db, data)\n# weight: 3\n# tier: CORE" in services_text
-    assert "# called_by: scripts.seed.run, users.router.create_user" in services_text
-    assert "# reads: users\n# mutates: users\n# [/RAG]\nasync def create_user" in services_text
+    # [STEP 2] Vérifier le contenu du bloc service → ordre amendé J10, valeurs exactes
+    assert "# [RAG]\n# signature: create_user(db, data)\n# tier: CORE\n# weight: 3" in services_text
+    assert "# weight: 3\n# reads: users\n# mutates: users\n# calls:" in services_text
+    assert (
+        "# called_by: scripts.seed.run, users.router.create_user\n# [/RAG]\nasync def create_user"
+        in services_text
+    )
 
     # [STEP 3] Vérifier l'ancrage routeur → bloc au-dessus du décorateur, arête Depends
     assert '# [/RAG]\n@router.post("")' in router_text

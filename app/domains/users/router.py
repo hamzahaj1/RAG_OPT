@@ -27,12 +27,12 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 # [RAG]
 # signature: create_user(data: UserCreate, db: AsyncSession = Depends(get_db)) -> User
-# weight: 2
 # tier: LEAF
-# calls: core.database.get_db, users.services.create_user
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: core.database.get_db, users.services.create_user
+# called_by: none
 # [/RAG]
 @router.post("", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 async def create_user(data: UserCreate, db: AsyncSession = Depends(get_db)) -> User:
@@ -43,12 +43,12 @@ async def create_user(data: UserCreate, db: AsyncSession = Depends(get_db)) -> U
 
 # [RAG]
 # signature: delete_user(user_id: int, db: AsyncSession = Depends(get_db)) -> None
-# weight: 2
 # tier: LEAF
-# calls: core.database.get_db, users.services.delete_user
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: core.database.get_db, users.services.delete_user
+# called_by: none
 # [/RAG]
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)) -> None:
@@ -59,12 +59,12 @@ async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)) -> None:
 
 # [RAG]
 # signature: get_user(user_id: int, db: AsyncSession = Depends(get_db)) -> User
-# weight: 2
 # tier: LEAF
-# calls: core.database.get_db, users.services.get_user
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: core.database.get_db, users.services.get_user
+# called_by: none
 # [/RAG]
 @router.get("/{user_id}", response_model=UserRead)
 async def get_user(user_id: int, db: AsyncSession = Depends(get_db)) -> User:
@@ -76,12 +76,12 @@ async def get_user(user_id: int, db: AsyncSession = Depends(get_db)) -> User:
 # [RAG]
 # signature: list_users(db: AsyncSession = Depends(get_db), limit: int = Query(default=50, ge=1,
 #   le=100), offset: int = Query(default=0, ge=0)) -> Sequence[User]
-# weight: 2
 # tier: LEAF
-# calls: core.database.get_db, users.services.list_users
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: core.database.get_db, users.services.list_users
+# called_by: none
 # [/RAG]
 @router.get("", response_model=list[UserRead])
 async def list_users(
@@ -96,12 +96,12 @@ async def list_users(
 
 # [RAG]
 # signature: update_user(data: UserUpdate, user_id: int, db: AsyncSession = Depends(get_db)) -> User
-# weight: 2
 # tier: LEAF
-# calls: core.database.get_db, users.services.update_user
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: core.database.get_db, users.services.update_user
+# called_by: none
 # [/RAG]
 @router.patch("/{user_id}", response_model=UserRead)
 async def update_user(data: UserUpdate, user_id: int, db: AsyncSession = Depends(get_db)) -> User:

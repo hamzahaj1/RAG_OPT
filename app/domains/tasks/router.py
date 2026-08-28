@@ -27,12 +27,12 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 # [RAG]
 # signature: create_task(data: TaskCreate, db: AsyncSession = Depends(get_db)) -> Task
-# weight: 2
 # tier: LEAF
-# calls: core.database.get_db, tasks.services.create_task
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: core.database.get_db, tasks.services.create_task
+# called_by: none
 # [/RAG]
 @router.post("", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
 async def create_task(data: TaskCreate, db: AsyncSession = Depends(get_db)) -> Task:
@@ -43,12 +43,12 @@ async def create_task(data: TaskCreate, db: AsyncSession = Depends(get_db)) -> T
 
 # [RAG]
 # signature: delete_task(task_id: int, db: AsyncSession = Depends(get_db)) -> None
-# weight: 2
 # tier: LEAF
-# calls: core.database.get_db, tasks.services.delete_task
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: core.database.get_db, tasks.services.delete_task
+# called_by: none
 # [/RAG]
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_task(task_id: int, db: AsyncSession = Depends(get_db)) -> None:
@@ -59,12 +59,12 @@ async def delete_task(task_id: int, db: AsyncSession = Depends(get_db)) -> None:
 
 # [RAG]
 # signature: get_task(task_id: int, db: AsyncSession = Depends(get_db)) -> Task
-# weight: 2
 # tier: LEAF
-# calls: core.database.get_db, tasks.services.get_task
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: core.database.get_db, tasks.services.get_task
+# called_by: none
 # [/RAG]
 @router.get("/{task_id}", response_model=TaskRead)
 async def get_task(task_id: int, db: AsyncSession = Depends(get_db)) -> Task:
@@ -76,12 +76,12 @@ async def get_task(task_id: int, db: AsyncSession = Depends(get_db)) -> Task:
 # [RAG]
 # signature: list_tasks(db: AsyncSession = Depends(get_db), limit: int = Query(default=50, ge=1,
 #   le=100), offset: int = Query(default=0, ge=0)) -> Sequence[Task]
-# weight: 2
 # tier: LEAF
-# calls: core.database.get_db, tasks.services.list_tasks
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: core.database.get_db, tasks.services.list_tasks
+# called_by: none
 # [/RAG]
 @router.get("", response_model=list[TaskRead])
 async def list_tasks(
@@ -96,12 +96,12 @@ async def list_tasks(
 
 # [RAG]
 # signature: update_task(data: TaskUpdate, task_id: int, db: AsyncSession = Depends(get_db)) -> Task
-# weight: 2
 # tier: LEAF
-# calls: core.database.get_db, tasks.services.update_task
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: core.database.get_db, tasks.services.update_task
+# called_by: none
 # [/RAG]
 @router.patch("/{task_id}", response_model=TaskRead)
 async def update_task(data: TaskUpdate, task_id: int, db: AsyncSession = Depends(get_db)) -> Task:

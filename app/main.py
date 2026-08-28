@@ -33,12 +33,12 @@ logger = logging.getLogger(__name__)
 
 # [RAG]
 # signature: create_app() -> FastAPI
-# weight: 1
 # tier: LEAF
-# calls: main.lifespan
-# called_by: none
+# weight: 1
 # reads: settings
 # mutates: none
+# calls: main.lifespan
+# called_by: none
 # [/RAG]
 def create_app() -> FastAPI:
     """Construit l'application FastAPI complète.
@@ -77,12 +77,12 @@ def create_app() -> FastAPI:
 
 # [RAG]
 # signature: lifespan(app: FastAPI) -> AsyncIterator[None]
-# weight: 2
 # tier: LEAF
-# calls: core.database.init_db_engine
-# called_by: main.create_app
+# weight: 2
 # reads: none
 # mutates: none
+# calls: core.database.init_db_engine
+# called_by: main.create_app
 # [/RAG]
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:

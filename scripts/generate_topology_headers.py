@@ -3,8 +3,11 @@
 
 Insère sur chaque fonction de premier niveau du corpus ``app/`` (hors
 ``models.py``/``schemas.py`` — périmètre CLAUDE.md §7 amendé) un bloc
-``# [RAG]`` … ``# [/RAG]`` dérivé du graphe résolu : signature, weight,
-tier, calls, called_by, reads, mutates. L'insertion est un remplacement
+``# [RAG]`` … ``# [/RAG]`` dérivé du graphe résolu : signature, tier,
+weight, reads, mutates, puis calls/called_by en dernier (amendement J10
+sur relevé R1 — le signal sémantique d'abord, l'annuaire ensuite) avec
+plafond de 5 entrées et repli en synthèse déterministe, le graphe
+intégral restant dans ``TOPOLOGY.yaml``. L'insertion est un remplacement
 délimité (R3) : deux exécutions successives sur un code inchangé laissent
 l'arbre strictement identique (FR-002). Les lignes longues sont repliées
 sous 100 colonnes avec continuation ``#   `` (format normatif du plan).
@@ -28,6 +31,8 @@ CONTINUATION_PREFIX: str = "#  "
 
 HEADER_CLOSE: str = "# [/RAG]"
 
+HEADER_LIST_CAP: int = 5
+
 HEADER_OPEN: str = "# [RAG]"
 
 MAX_LINE_LENGTH: int = 100
@@ -49,26 +54,58 @@ def _format_block(
 ) -> list[str]:
     """Compose le bloc [RAG] complet d'une fonction, champs en ordre fixe.
 
-    Ordre normatif (plan § Formats) : signature, weight, tier, calls,
-    called_by, reads, mutates — listes triées ASCII, ``none`` si vide.
+    Ordre normatif (plan § Formats, amendé boucle J10 sur relevé R1) :
+    signature, tier, weight, reads, mutates, puis calls/called_by en
+    dernier — listes triées ASCII, ``none`` si vide, plafond de
+    ``HEADER_LIST_CAP`` entrées avec repli en synthèse déterministe.
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     lines: list[str]
     # ─────────────────────────────────────────
 
-    # [STEP 1] Assembler champs et marqueurs → bloc prêt à insérer
+    # [STEP 1] Assembler champs et marqueurs → signal sémantique d'abord, annuaire ensuite
     lines = [HEADER_OPEN]
     lines.extend(format_field("signature", node.signature))
-    lines.extend(format_field("weight", str(corpus_analysis.weight_of(graph, node.qualified))))
     lines.extend(format_field("tier", corpus_analysis.tier_of(graph, node.qualified)))
-    lines.extend(format_list_field("calls", corpus_analysis.calls_of(graph, node.qualified)))
-    lines.extend(
-        format_list_field("called_by", corpus_analysis.called_by_of(graph, node.qualified))
-    )
+    lines.extend(format_field("weight", str(corpus_analysis.weight_of(graph, node.qualified))))
     lines.extend(format_list_field("reads", sorted(graph.reads.get(node.qualified, set()))))
     lines.extend(format_list_field("mutates", sorted(graph.mutates.get(node.qualified, set()))))
+    lines.extend(
+        _format_call_field("calls", "sortants", corpus_analysis.calls_of(graph, node.qualified))
+    )
+    lines.extend(
+        _format_call_field(
+            "called_by", "entrants", corpus_analysis.called_by_of(graph, node.qualified)
+        )
+    )
     lines.append(HEADER_CLOSE)
     return lines
+
+
+def _format_call_field(label: str, direction: str, values: list[str]) -> list[str]:
+    """Rend un champ d'appels plafonné — liste courte ou synthèse déterministe.
+
+    Règle (plan § Formats, amendement J10) : au-delà de
+    ``HEADER_LIST_CAP`` entrées, l'en-tête porte le résumé
+    « N appels {direction} — M domaines (liste triée) — détail :
+    TOPOLOGY.yaml » ; le graphe intégral reste dans ``TOPOLOGY.yaml``.
+    """
+    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    domains: list[str]
+    summary: str
+    # ─────────────────────────────────────────
+
+    # [STEP 1] Garder la liste courte telle quelle → cas nominal inchangé
+    if len(values) <= HEADER_LIST_CAP:
+        return format_list_field(label, values)
+
+    # [STEP 2] Replier en synthèse déterministe → l'en-tête reste un résumé
+    domains = sorted({value.split(".")[0] for value in values})
+    summary = (
+        f"{len(values)} appels {direction} — {len(domains)} domaine"
+        f"{'s' if len(domains) > 1 else ''} ({', '.join(domains)}) — détail : TOPOLOGY.yaml"
+    )
+    return format_field(label, summary)
 
 
 def _module_functions(path: Path) -> list[tuple[str, int]]:

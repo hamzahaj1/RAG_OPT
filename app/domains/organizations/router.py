@@ -32,12 +32,12 @@ router = APIRouter(prefix="/organizations", tags=["organizations"])
 # [RAG]
 # signature: create_organization(data: OrganizationCreate,
 #   db: AsyncSession = Depends(get_db)) -> Organization
-# weight: 2
 # tier: LEAF
-# calls: core.database.get_db, organizations.services.create_organization
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: core.database.get_db, organizations.services.create_organization
+# called_by: none
 # [/RAG]
 @router.post("", response_model=OrganizationRead, status_code=status.HTTP_201_CREATED)
 async def create_organization(
@@ -50,12 +50,12 @@ async def create_organization(
 
 # [RAG]
 # signature: delete_organization(organization_id: int, db: AsyncSession = Depends(get_db)) -> None
-# weight: 2
 # tier: LEAF
-# calls: core.database.get_db, organizations.services.delete_organization
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: core.database.get_db, organizations.services.delete_organization
+# called_by: none
 # [/RAG]
 @router.delete("/{organization_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_organization(organization_id: int, db: AsyncSession = Depends(get_db)) -> None:
@@ -67,12 +67,12 @@ async def delete_organization(organization_id: int, db: AsyncSession = Depends(g
 # [RAG]
 # signature: get_organization(organization_id: int,
 #   db: AsyncSession = Depends(get_db)) -> Organization
-# weight: 2
 # tier: LEAF
-# calls: core.database.get_db, organizations.services.get_organization
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: core.database.get_db, organizations.services.get_organization
+# called_by: none
 # [/RAG]
 @router.get("/{organization_id}", response_model=OrganizationRead)
 async def get_organization(
@@ -86,12 +86,12 @@ async def get_organization(
 # [RAG]
 # signature: list_organizations(db: AsyncSession = Depends(get_db), limit: int = Query(default=50,
 #   ge=1, le=100), offset: int = Query(default=0, ge=0)) -> Sequence[Organization]
-# weight: 2
 # tier: LEAF
-# calls: core.database.get_db, organizations.services.list_organizations
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: core.database.get_db, organizations.services.list_organizations
+# called_by: none
 # [/RAG]
 @router.get("", response_model=list[OrganizationRead])
 async def list_organizations(
@@ -107,12 +107,12 @@ async def list_organizations(
 # [RAG]
 # signature: update_organization(data: OrganizationUpdate, organization_id: int,
 #   db: AsyncSession = Depends(get_db)) -> Organization
-# weight: 2
 # tier: LEAF
-# calls: core.database.get_db, organizations.services.update_organization
-# called_by: none
+# weight: 2
 # reads: none
 # mutates: none
+# calls: core.database.get_db, organizations.services.update_organization
+# called_by: none
 # [/RAG]
 @router.patch("/{organization_id}", response_model=OrganizationRead)
 async def update_organization(

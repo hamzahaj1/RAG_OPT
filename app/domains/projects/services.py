@@ -28,12 +28,12 @@ from app.domains.projects.schemas import ProjectCreate, ProjectUpdate
 
 # [RAG]
 # signature: create_project(db: AsyncSession, data: ProjectCreate) -> Project
-# weight: 2
 # tier: CORE
-# calls: none
-# called_by: projects.router.create_project, scripts.seed._ensure_project
+# weight: 2
 # reads: organizations, projects
 # mutates: projects
+# calls: none
+# called_by: projects.router.create_project, scripts.seed._ensure_project
 # [/RAG]
 async def create_project(db: AsyncSession, data: ProjectCreate) -> Project:
     """Crée un projet.
@@ -81,12 +81,12 @@ async def create_project(db: AsyncSession, data: ProjectCreate) -> Project:
 
 # [RAG]
 # signature: delete_project(db: AsyncSession, project_id: int) -> None
-# weight: 2
 # tier: LEAF
-# calls: projects.services.get_project
-# called_by: projects.router.delete_project
+# weight: 2
 # reads: none
 # mutates: projects
+# calls: projects.services.get_project
+# called_by: projects.router.delete_project
 # [/RAG]
 async def delete_project(db: AsyncSession, project_id: int) -> None:
     """Supprime un projet.
@@ -111,13 +111,13 @@ async def delete_project(db: AsyncSession, project_id: int) -> None:
 
 # [RAG]
 # signature: get_project(db: AsyncSession, project_id: int) -> Project
-# weight: 3
 # tier: CORE
+# weight: 3
+# reads: projects
+# mutates: none
 # calls: none
 # called_by: projects.router.get_project, projects.services.delete_project,
 #   projects.services.update_project
-# reads: projects
-# mutates: none
 # [/RAG]
 async def get_project(db: AsyncSession, project_id: int) -> Project:
     """Consulte un projet par identifiant.
@@ -141,12 +141,12 @@ async def get_project(db: AsyncSession, project_id: int) -> Project:
 
 # [RAG]
 # signature: list_projects(db: AsyncSession, limit: int, offset: int) -> Sequence[Project]
-# weight: 1
 # tier: LEAF
-# calls: none
-# called_by: projects.router.list_projects
+# weight: 1
 # reads: projects
 # mutates: none
+# calls: none
+# called_by: projects.router.list_projects
 # [/RAG]
 async def list_projects(db: AsyncSession, limit: int, offset: int) -> Sequence[Project]:
     """Liste les projets par page.
@@ -169,12 +169,12 @@ async def list_projects(db: AsyncSession, limit: int, offset: int) -> Sequence[P
 
 # [RAG]
 # signature: update_project(db: AsyncSession, data: ProjectUpdate, project_id: int) -> Project
-# weight: 2
 # tier: LEAF
-# calls: projects.services.get_project
-# called_by: projects.router.update_project
+# weight: 2
 # reads: projects
 # mutates: projects
+# calls: projects.services.get_project
+# called_by: projects.router.update_project
 # [/RAG]
 async def update_project(db: AsyncSession, data: ProjectUpdate, project_id: int) -> Project:
     """Modifie partiellement un projet.
