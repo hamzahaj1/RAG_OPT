@@ -1,236 +1,235 @@
-# CONTRACTS — Contrats inter-domaines Alpha-Scope
+# CONTRACTS — Alpha-Scope cross-domain contracts
 
-> Documentation de référence des **6 arêtes FK cross-domaines** du graphe
-> relationnel (CLAUDE.md §3), établie au jalon 12 depuis les sources de
-> vérité exclusives : migrations Alembic (noms de contraintes réels),
-> docstrings des services (codes et messages exacts), blocs `[MODEL]`
-> générés. Aucune règle n'est énoncée ici qui ne figure dans une source.
+> Reference documentation of the **6 cross-domain FK edges** of the
+> relational graph (CLAUDE.md §3), established at milestone 12 from the
+> exclusive sources of truth: Alembic migrations (real constraint
+> names), service docstrings (exact codes and messages), generated
+> `[MODEL]` blocks. No rule is stated here that does not appear in a
+> source.
 >
-> Ce document appartient au **corpus RAG indexable** (arbitrage jalon 12,
-> CLAUDE.md §4 bis) : **une section d'arête = un chunk**.
+> This document belongs to the **indexable RAG corpus** (milestone 12
+> arbitration, CLAUDE.md §4 bis): **one edge section = one chunk**.
 
-## Principe transversal — la double couche (D2)
+## Cross-cutting principle — the double layer (D2)
 
-Chaque arête est défendue deux fois :
+Every edge is defended twice:
 
-- **Couche applicative** : un SELECT de vérification avant toute
-  écriture, dans le service — `404 Not Found` au format commun
-  « `Entity {id} not found` » (FR-003) quand la cible référencée
-  n'existe pas à la création ; `409 Conflict` nommé quand une
-  suppression amont est bloquée par des lignes aval.
-- **Couche DB (backstop)** : la contrainte FK nommée (convention
-  `fk_<table>_<colonne>_<table_cible>`, D3), qui garantit l'invariant
-  même si la couche applicative était contournée.
+- **Application layer**: a verification SELECT before any write, in the
+  service — `404 Not Found` in the shared format
+  "`Entity {id} not found`" (FR-003) when the referenced target does
+  not exist at creation; a named `409 Conflict` when an upstream
+  deletion is blocked by downstream rows.
+- **DB layer (backstop)**: the named FK constraint (convention
+  `fk_<table>_<column>_<target_table>`, D3), which guarantees the
+  invariant even if the application layer were bypassed.
 
-**Dérogation actée** (plan phase 2, jalon 7) : l'arête d'assignation
-(`tasks.assignee_id`, `SET NULL`) est portée par la **DB seule** en
-suppression — première et unique dérogation au patron 409.
+**Recorded exception** (phase 2 plan, milestone 7): the assignment edge
+(`tasks.assignee_id`, `SET NULL`) is carried by the **DB alone** on
+deletion — the first and only exception to the 409 pattern.
 
-Vue d'ensemble (data-model.md, § Sémantique de suppression) :
+Overview (data-model.md, § Deletion semantics):
 
 ```
-DELETE user         → 409 si propriétaire d'organisations (service + RESTRICT)
-                    → 409 si auteur de commentaires      (service + RESTRICT)
-                    → tâches assignées : désassignées    (SET NULL, DB seule)
-DELETE organization → 409 si contient des projets        (service + RESTRICT)
-DELETE project      → tâches supprimées                  (CASCADE, DB seule)
-                      └→ commentaires supprimés          (CASCADE transitif)
-DELETE task         → commentaires supprimés             (CASCADE, DB seule)
-DELETE comment      → aucune dépendance
+DELETE user         → 409 if owner of organizations   (service + RESTRICT)
+                    → 409 if author of comments       (service + RESTRICT)
+                    → assigned tasks: unassigned      (SET NULL, DB alone)
+DELETE organization → 409 if it holds projects        (service + RESTRICT)
+DELETE project      → tasks deleted                   (CASCADE, DB alone)
+                      └→ comments deleted             (transitive CASCADE)
+DELETE task         → comments deleted                (CASCADE, DB alone)
+DELETE comment      → no dependency
 ```
 
 ---
 
-## Arête 1 — `organizations.owner_id` → `users.id`
+## Edge 1 — `organizations.owner_id` → `users.id`
 
-| Attribut | Valeur |
+| Attribute | Value |
 |---|---|
-| Politique | **RESTRICT** |
-| Contrainte | `fk_organizations_owner_id_users` (`ondelete=RESTRICT`) |
+| Policy | **RESTRICT** |
+| Constraint | `fk_organizations_owner_id_users` (`ondelete=RESTRICT`) |
 | Index | `ix_organizations_owner_id` |
-| Nullabilité | NOT NULL |
+| Nullability | NOT NULL |
 | Migration | `1d70e9de6246` (organizations_domain) |
 
-**Double couche de vérification** :
+**Double verification layer**:
 
-- *Création* — `create_organization` vérifie l'existence du propriétaire
-  par SELECT sur `users` avant toute écriture → `404` « `User {id} not
-  found` » (FR-011, D2).
-- *Suppression amont* — `delete_user` refuse un propriétaire
-  d'organisations par SELECT applicatif → `409` « `User {id} still owns
-  organizations` » ; **backstop** : la FK `RESTRICT`.
+- *Creation* — `create_organization` checks the owner's existence by
+  SELECT on `users` before any write → `404` "`User {id} not found`"
+  (FR-011, D2).
+- *Upstream deletion* — `delete_user` refuses an owner of organizations
+  by application-level SELECT → `409` "`User {id} still owns
+  organizations`"; **backstop**: the `RESTRICT` FK.
 
-**Invariants métier** (docstrings `organizations/services.py`) :
+**Business invariants** (docstrings `organizations/services.py`):
 
-- Toute organisation a exactement un propriétaire existant — aucune FK
-  orpheline ne peut être écrite.
-- Le propriétaire n'est **jamais modifiable** après création
-  (`OrganizationUpdate` n'expose pas `owner_id` — Phase 2).
+- Every organization has exactly one existing owner — no orphan FK can
+  be written.
+- The owner is **never modifiable** after creation
+  (`OrganizationUpdate` does not expose `owner_id` — Phase 2).
 
 ---
 
-## Arête 2 — `projects.organization_id` → `organizations.id`
+## Edge 2 — `projects.organization_id` → `organizations.id`
 
-| Attribut | Valeur |
+| Attribute | Value |
 |---|---|
-| Politique | **RESTRICT** |
-| Contrainte | `fk_projects_organization_id_organizations` (`ondelete=RESTRICT`) |
+| Policy | **RESTRICT** |
+| Constraint | `fk_projects_organization_id_organizations` (`ondelete=RESTRICT`) |
 | Index | `ix_projects_organization_id` |
-| Nullabilité | NOT NULL |
-| Migration | `677e300dd994` (projects_domain) ; unicité composée renommée `uq_projects_organization_id_name` par `a48ad14da82b` |
+| Nullability | NOT NULL |
+| Migration | `677e300dd994` (projects_domain); composite uniqueness renamed `uq_projects_organization_id_name` by `a48ad14da82b` |
 
-**Double couche de vérification** :
+**Double verification layer**:
 
-- *Création* — `create_project` vérifie l'existence de l'organisation
-  par SELECT avant toute écriture → `404` « `Organization {id} not
-  found` » ; l'unicité du nom **dans l'organisation** est refusée en
-  `409` « `Project name already taken in this organization` »
-  (contrainte composée `uq_projects_organization_id_name` en backstop).
-- *Suppression amont* — `delete_organization` refuse une organisation
-  contenant au moins un projet par SELECT applicatif → `409`
-  « `Organization {id} still has projects` » ; **backstop** : la FK
-  `RESTRICT`. La suppression est bloquée par les projets, jamais
-  propagée vers eux.
+- *Creation* — `create_project` checks the organization's existence by
+  SELECT before any write → `404` "`Organization {id} not found`"; name
+  uniqueness **within the organization** is refused with `409`
+  "`Project name already taken in this organization`" (composite
+  constraint `uq_projects_organization_id_name` as backstop).
+- *Upstream deletion* — `delete_organization` refuses an organization
+  holding at least one project by application-level SELECT → `409`
+  "`Organization {id} still has projects`"; **backstop**: the
+  `RESTRICT` FK. The deletion is blocked by the projects, never
+  propagated to them.
 
-**Invariants métier** (docstrings `projects/services.py`) :
+**Business invariants** (docstrings `projects/services.py`):
 
-- Le rattachement à l'organisation n'est **jamais modifiable**
-  (`ProjectUpdate` n'expose pas `organization_id` — Phase 2).
-- Le même nom de projet peut exister dans deux organisations distinctes ;
-  jamais deux fois dans la même (unicité composée).
-- Avec l'arête 1, la **chaîne bloquante amont est complète** :
-  users ← organizations ← projects — chaque suppression amont est
-  refusée en 409 tant qu'une ligne aval la référence.
+- The attachment to the organization is **never modifiable**
+  (`ProjectUpdate` does not expose `organization_id` — Phase 2).
+- The same project name may exist in two distinct organizations; never
+  twice in the same one (composite uniqueness).
+- Together with edge 1, the **upstream blocking chain is complete**:
+  users ← organizations ← projects — every upstream deletion is refused
+  with 409 as long as a downstream row references it.
 
 ---
 
-## Arête 3 — `tasks.project_id` → `projects.id`
+## Edge 3 — `tasks.project_id` → `projects.id`
 
-| Attribut | Valeur |
+| Attribute | Value |
 |---|---|
-| Politique | **CASCADE** (axe de contenance) |
-| Contrainte | `fk_tasks_project_id_projects` (`ondelete=CASCADE`) |
+| Policy | **CASCADE** (containment axis) |
+| Constraint | `fk_tasks_project_id_projects` (`ondelete=CASCADE`) |
 | Index | `ix_tasks_project_id` |
-| Nullabilité | NOT NULL |
-| Migration | `443e75f588d9` (tasks_domain) — premier `CASCADE` du projet |
+| Nullability | NOT NULL |
+| Migration | `443e75f588d9` (tasks_domain) — the project's first `CASCADE` |
 
-**Double couche de vérification** :
+**Double verification layer**:
 
-- *Création* — `create_task` vérifie l'existence du projet par SELECT
-  avant toute écriture → `404` « `Project {id} not found` » (D2).
-- *Suppression* — la cascade est **portée par la DB seule**
-  (`delete_project` : « jamais par un SELECT applicatif ») : la
-  suppression du projet emporte ses tâches, puis leurs commentaires
-  (cascade transitive via l'arête 5) — vérifiée par le premier test à
-  trois niveaux du projet (DELETE projet → tâche 404 **et**
-  commentaire 404, jalon 8).
+- *Creation* — `create_task` checks the project's existence by SELECT
+  before any write → `404` "`Project {id} not found`" (D2).
+- *Deletion* — the cascade is **carried by the DB alone**
+  (`delete_project`: "never by an application-level SELECT"): deleting
+  the project takes its tasks with it, then their comments (transitive
+  cascade through edge 5) — verified by the project's first three-level
+  test (DELETE project → task 404 **and** comment 404, milestone 8).
 
-**Invariants métier** (docstrings `tasks/models.py`, `tasks/services.py`) :
+**Business invariants** (docstrings `tasks/models.py`, `tasks/services.py`):
 
-- La suppression du projet emporte la tâche, **jamais l'inverse** : la
-  tâche vivante retient son `project_id` (tests bidirectionnels,
-  jalon 7).
-- Le rattachement au projet n'est **jamais modifiable** (`TaskUpdate`
-  n'expose pas `project_id` — Phase 2).
+- Deleting the project takes the task with it, **never the reverse**:
+  the living task keeps its `project_id` (bidirectional tests,
+  milestone 7).
+- The attachment to the project is **never modifiable** (`TaskUpdate`
+  does not expose `project_id` — Phase 2).
 
 ---
 
-## Arête 4 — `tasks.assignee_id` → `users.id`
+## Edge 4 — `tasks.assignee_id` → `users.id`
 
-| Attribut | Valeur |
+| Attribute | Value |
 |---|---|
-| Politique | **SET NULL** (axe de référence, détachement) |
-| Contrainte | `fk_tasks_assignee_id_users` (`ondelete=SET NULL`) |
+| Policy | **SET NULL** (reference axis, detachment) |
+| Constraint | `fk_tasks_assignee_id_users` (`ondelete=SET NULL`) |
 | Index | `ix_tasks_assignee_id` |
-| Nullabilité | **NULLABLE** — seule FK nullable de la phase 2 |
-| Migration | `443e75f588d9` (tasks_domain) — premier `SET NULL` du projet |
+| Nullability | **NULLABLE** — the only nullable FK of phase 2 |
+| Migration | `443e75f588d9` (tasks_domain) — the project's first `SET NULL` |
 
-**Double couche de vérification** :
+**Double verification layer**:
 
-- *Création* — l'assigné est optionnel ; s'il est fourni, il doit
-  exister → `404` « `User {id} not found` » ; une tâche naît non
-  assignée quand `assignee_id` est absent ou `null`.
-- *Suppression* — **DB seule, dérogation actée au patron 409** (plan
-  phase 2, jalon 7) : la suppression de l'assigné répond `204`, la
-  tâche **subsiste** avec `assignee_id: null` — l'assignation ne bloque
-  jamais la suppression d'un utilisateur.
+- *Creation* — the assignee is optional; when provided, it must exist
+  → `404` "`User {id} not found`"; a task is born unassigned when
+  `assignee_id` is absent or `null`.
+- *Deletion* — **DB alone, recorded exception to the 409 pattern**
+  (phase 2 plan, milestone 7): deleting the assignee responds `204`,
+  the task **survives** with `assignee_id: null` — assignment never
+  blocks the deletion of a user.
 
-**Invariants métier** (docstrings `tasks/models.py`, `update_task`) :
+**Business invariants** (docstrings `tasks/models.py`, `update_task`):
 
-- `NULL` signifie « non assignée ».
-- `update_task` distingue **trois cas** (sémantique `exclude_unset`) :
-  champ absent → pas de changement ; `null` explicite → désassignation
-  applicative ; entier → assignation, l'assigné doit exister (`404`
-  « `User {id} not found` »).
+- `NULL` means "unassigned".
+- `update_task` distinguishes **three cases** (`exclude_unset`
+  semantics): absent field → no change; explicit `null` →
+  application-level unassignment; integer → assignment, the assignee
+  must exist (`404` "`User {id} not found`").
 
 ---
 
-## Arête 5 — `comments.task_id` → `tasks.id`
+## Edge 5 — `comments.task_id` → `tasks.id`
 
-| Attribut | Valeur |
+| Attribute | Value |
 |---|---|
-| Politique | **CASCADE** (axe de contenance) |
-| Contrainte | `fk_comments_task_id_tasks` (`ondelete=CASCADE`) |
+| Policy | **CASCADE** (containment axis) |
+| Constraint | `fk_comments_task_id_tasks` (`ondelete=CASCADE`) |
 | Index | `ix_comments_task_id` |
-| Nullabilité | NOT NULL |
+| Nullability | NOT NULL |
 | Migration | `3b55d9e3f2bf` (comments_domain) |
 
-**Double couche de vérification** :
+**Double verification layer**:
 
-- *Création* — `create_comment` vérifie l'existence de la tâche par
-  SELECT avant toute écriture → `404` « `Task {id} not found` » (D2).
-- *Suppression* — cascade **portée par la DB seule** (`delete_task` :
-  « jamais par un SELECT applicatif ») : la suppression de la tâche
-  emporte ses commentaires ; ce même chemin est le second étage de la
-  cascade transitive projects → tasks → comments (arête 3).
+- *Creation* — `create_comment` checks the task's existence by SELECT
+  before any write → `404` "`Task {id} not found`" (D2).
+- *Deletion* — cascade **carried by the DB alone** (`delete_task`:
+  "never by an application-level SELECT"): deleting the task takes its
+  comments with it; this same path is the second stage of the
+  transitive cascade projects → tasks → comments (edge 3).
 
-**Invariants métier** (docstrings `comments/services.py`) :
+**Business invariants** (docstrings `comments/services.py`):
 
-- La tâche est **fixée à la création** — non modifiable ensuite
-  (`CommentUpdate` n'expose pas `task_id` — Phase 2).
-- **Jamais de liste globale de commentaires** (FR-021) :
-  `GET /api/v1/comments` exige `task_id` en paramètre de requête —
-  `422` sans lui (validation du routeur), `404` « `Task {id} not
-  found` » si la tâche est inconnue.
+- The task is **fixed at creation** — not modifiable afterwards
+  (`CommentUpdate` does not expose `task_id` — Phase 2).
+- **Never a global list of comments** (FR-021):
+  `GET /api/v1/comments` requires `task_id` as a query parameter —
+  `422` without it (router validation), `404` "`Task {id} not found`"
+  when the task is unknown.
 
 ---
 
-## Arête 6 — `comments.author_id` → `users.id`
+## Edge 6 — `comments.author_id` → `users.id`
 
-| Attribut | Valeur |
+| Attribute | Value |
 |---|---|
-| Politique | **RESTRICT** |
-| Contrainte | `fk_comments_author_id_users` (`ondelete=RESTRICT`) |
+| Policy | **RESTRICT** |
+| Constraint | `fk_comments_author_id_users` (`ondelete=RESTRICT`) |
 | Index | `ix_comments_author_id` |
-| Nullabilité | NOT NULL |
+| Nullability | NOT NULL |
 | Migration | `3b55d9e3f2bf` (comments_domain) |
 
-**Double couche de vérification** :
+**Double verification layer**:
 
-- *Création* — `create_comment` vérifie l'existence de l'auteur par
-  SELECT sur `users` avant toute écriture → `404` « `User {id} not
-  found` » (D2).
-- *Suppression amont* — `delete_user` refuse un auteur de commentaires
-  par SELECT applicatif → `409` « `User {id} still has comments` » ;
-  **backstop** : la FK `RESTRICT`. Vérifié dans les deux sens au
-  jalon 8 : le 409 laisse le user **et** ses commentaires intacts.
+- *Creation* — `create_comment` checks the author's existence by SELECT
+  on `users` before any write → `404` "`User {id} not found`" (D2).
+- *Upstream deletion* — `delete_user` refuses an author of comments by
+  application-level SELECT → `409` "`User {id} still has comments`";
+  **backstop**: the `RESTRICT` FK. Verified in both directions at
+  milestone 8: the 409 leaves the user **and** their comments intact.
 
-**Invariants métier** (docstrings `comments/services.py`,
-`users/services.py`) :
+**Business invariants** (docstrings `comments/services.py`,
+`users/services.py`):
 
-- L'auteur est **fixé à la création** — non modifiable ensuite
-  (Phase 2) : l'attribution des commentaires reste intègre.
-- Avec les arêtes 1 et 4, `delete_user` atteint sa **forme finale**
-  (jalon 8) : deux blocages 409 (organisations, commentaires) et un
-  détachement silencieux (assignation, SET NULL, DB seule).
+- The author is **fixed at creation** — not modifiable afterwards
+  (Phase 2): comment attribution stays intact.
+- Together with edges 1 and 4, `delete_user` reaches its **final form**
+  (milestone 8): two 409 blocks (organizations, comments) and one
+  silent detachment (assignment, SET NULL, DB alone).
 
 ---
 
 ## Sources
 
-| Source | Rôle |
+| Source | Role |
 |---|---|
-| `alembic/versions/1d70e9de6246_*.py`, `677e300dd994_*.py`, `443e75f588d9_*.py`, `3b55d9e3f2bf_*.py`, `a48ad14da82b_*.py` | noms de contraintes et politiques `ondelete` réels |
-| Docstrings de `app/domains/*/services.py` | codes 404/409, messages exacts, invariants |
-| Blocs `[MODEL]` de `app/domains/*/models.py` (générés, jalon 11) | `fks` / `referenced_by` par table |
-| `specs/001-phase2-domains/data-model.md` | tables, nullabilité, sémantique de suppression |
+| `alembic/versions/1d70e9de6246_*.py`, `677e300dd994_*.py`, `443e75f588d9_*.py`, `3b55d9e3f2bf_*.py`, `a48ad14da82b_*.py` | real constraint names and `ondelete` policies |
+| Docstrings of `app/domains/*/services.py` | 404/409 codes, exact messages, invariants |
+| `[MODEL]` blocks of `app/domains/*/models.py` (generated, milestone 11) | `fks` / `referenced_by` per table |
+| `specs/001-phase2-domains/data-model.md` | tables, nullability, deletion semantics |
