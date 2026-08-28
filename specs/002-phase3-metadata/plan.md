@@ -159,21 +159,37 @@ existant à cet ancrage est intégralement remplacé.
 ```python
 # [RAG]
 # signature: create_user(db: AsyncSession, data: UserCreate) -> User
-# weight: 4
 # tier: CORE
-# calls: users.services._hash_password
-# called_by: scripts.seed._seed_users, users.router.create_user
+# weight: 4
 # reads: users
 # mutates: users
+# calls: users.services._hash_password
+# called_by: scripts.seed._seed_users, users.router.create_user
 # [/RAG]
 async def create_user(db: AsyncSession, data: UserCreate) -> User:
 ```
 
-Champs — ordre fixe : `signature` (nom + paramètres typés + retour, dérivés
-de l'AST), `weight` (entier, R1), `tier` (`LEAF` | `CORE` | `CRITICAL_CORE`),
-`calls` / `called_by` (noms qualifiés triés), `reads` / `mutates` (noms de
-tables triés ; `reads` inclut l'entité `settings` — charte §6 : « tables et
-entités lues »).
+Champs — ordre fixe **(amendé le 2026-08-28, boucle J10 sur relevé R1)** :
+`signature` (nom + paramètres typés + retour, dérivés de l'AST), `tier`
+(`LEAF` | `CORE` | `CRITICAL_CORE`), `weight` (entier, R1), `reads` /
+`mutates` (noms de tables triés ; `reads` inclut l'entité `settings` —
+charte §6 : « tables et entités lues »), puis `calls` / `called_by` (noms
+qualifiés triés) **en dernier** — le signal sémantique d'abord, l'annuaire
+ensuite : la docstring d'une fonction au cœur critique (`get_db`) doit
+entrer dans les ~500 premiers caractères du chunk.
+
+**Plafond des listes d'appels (normatif — amendement J10)** : `calls` et
+`called_by` sont **plafonnés à 5 entrées** dans l'en-tête. Au-delà, repli
+en **synthèse déterministe** :
+`N appels entrants — M domaines (liste triée des domaines) — détail : TOPOLOGY.yaml`
+(« appels sortants » pour `calls`). Le graphe intégral reste dans
+`TOPOLOGY.yaml` — l'en-tête redevient un résumé, c'était sa vocation.
+Exemple réel (`get_db`) :
+
+```python
+# called_by: 25 appels entrants — 5 domaines (comments, organizations, projects, tasks,
+#   users) — détail : TOPOLOGY.yaml
+```
 
 **Repli des lignes longues (normatif)** : tout champ dont la ligne dépasse
 100 colonnes (borne Ruff du projet) est replié sur les séparateurs `, ` ;
@@ -192,6 +208,8 @@ module. Un bloc par entité du fichier (phase 2 : une entité par fichier).
 
 ```python
 # [MODEL]
+# synthese: Un User est référencé par comments.author_id (RESTRICT — blocage),
+#   organizations.owner_id (RESTRICT — blocage), tasks.assignee_id (SET NULL — désassignation).
 # entity: User
 # table: users
 # columns: created_at, email, full_name, hashed_password, id, role, updated_at
@@ -200,7 +218,14 @@ module. Un bloc par entité du fichier (phase 2 : une entité par fichier).
 # [/MODEL]
 ```
 
-Champs : `entity`, `table`, `columns` (triées), `fks`
+Champs **(amendés le 2026-08-28, boucle J11 sur relevé R1)** : `synthese`
+(**première ligne du bloc** — synthèse en langage naturel **français**, la
+langue des docstrings du corpus, **générée et déterministe** depuis les
+données FK, jamais rédigée : gabarit « Un {Entité} est référencé par
+{table.colonne} ({politique} — {glose}), … » avec gloses figées
+RESTRICT → blocage, CASCADE → suppression en cascade, SET NULL →
+désassignation ; entité sans arête entrante → « Un {Entité} n'est référencé
+par aucune table. »), puis `entity`, `table`, `columns` (triées), `fks`
 (`colonne -> table.colonne [politique]`, triées), `referenced_by` (arêtes
 entrantes avec politique `ondelete`, triées — dérivées du graphe complet des
 modèles, c'est le signal RAG des questions de suppression).
@@ -211,14 +236,18 @@ Même ancrage que `[MODEL]`.
 
 ```python
 # [SCHEMA]
+# synthese: Les 4 schémas Pydantic du domaine users portent le contrat de l'entité User.
 # domain: users
-# schemas: UserCreate(BaseModel), UserRead(BaseModel), UserUpdate(BaseModel)
+# schemas: UserBase(BaseModel), UserCreate(UserBase), UserRead(UserBase), UserUpdate(BaseModel)
 # entity: User
 # [/SCHEMA]
 ```
 
-Champs : `domain`, `schemas` (classes triées avec leur base directe),
-`entity` (modèle SQLAlchemy correspondant du domaine).
+Champs **(amendés le 2026-08-28, par cohérence avec `[MODEL]`)** :
+`synthese` (première ligne — gabarit déterministe « Les {n} schémas
+Pydantic du domaine {domaine} portent le contrat de l'entité {Entité}. »),
+puis `domain`, `schemas` (classes triées avec leur base directe), `entity`
+(modèle SQLAlchemy correspondant du domaine).
 
 ### `TOPOLOGY.yaml` (racine)
 
