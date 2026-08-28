@@ -1,11 +1,13 @@
 # Jalon 13 — Constat du test RAG précoce
 
 **Branch**: `002-phase3-metadata` | **Protocole consigné le**: 2026-08-28
-| **Statut**: relevé R2 exécuté le 2026-08-28 après boucles J10+J11
-(pistes 2 et 3 validées) — **ÉCHEC persistant sur les deux mêmes
-critères, progression mesurable ; exécution arrêtée** (protocole §5),
-la piste 4 (modèle à fenêtre longue) est la réserve de gouvernance à
-instruire
+| **Statut**: relevé R3 exécuté le 2026-08-28 sur piste 4 instruite
+(décision de gouvernance — modèle `intfloat/multilingual-e5-large` +
+préfixes `query:`/`passage:`, seule variable modifiée) — **Q2 en SUCCÈS
+intégral (première question résolue du jalon), Q1 en ÉCHEC persistant
+sur le seul critère B** (`User [MODEL]` rang 6, à 0.0018 du seuil) ;
+exécution arrêtée (protocole §5), suite actée : migration linguistique
+du corpus puis relevé R4 (CLAUDE.md §4 ter)
 
 > **Le constat est le livrable.** Un échec proprement documenté vaut
 > mieux qu'un succès arrangé — c'est toute la raison d'être du jalon
@@ -70,6 +72,21 @@ mainteneur.
 - **Note consignée** : fastembed ≥ 0.6 applique le *mean pooling* à ce
   modèle (avertissement à l'exécution : « now uses mean pooling instead
   of CLS embedding ») — comportement épinglé avec la version.
+
+**Amendement R3 (2026-08-28, décision de gouvernance — piste 4
+instruite)** : la variable gelée « modèle d'embedding » est changée —
+c'est la seule modification depuis R2.
+
+- **Modèle** : `intfloat/multilingual-e5-large` (fenêtre 512 tokens ;
+  artefact ONNX fastembed `qdrant/multilingual-e5-large-onnx`),
+  fastembed `0.8.0` inchangé.
+- **Protocole d'usage e5** : préfixes `passage: ` sur chaque chunk et
+  `query: ` sur chaque question, appliqués **côté sonde** à la
+  vectorisation — le corpus sur disque est strictement inchangé
+  (constantes `PASSAGE_PREFIX`/`QUERY_PREFIX` de `scripts/rag_probe.py` ;
+  vérifié : la classe fastembed de ce modèle n'applique aucun préfixe
+  automatique, pas de double préfixe).
+- Questions françaises verbatim, k=5, échantillon et chunking inchangés.
 
 ## Inventaire des chunks (T076 — avant tout relevé)
 
@@ -223,6 +240,75 @@ the format: mean pooling over ~250 mostly-code tokens dilutes the
 données »). Both failing targets improved monotonically across
 R1 → R2 under frozen probe variables.
 
+### Relevé R3 — 2026-08-28 (`python -m scripts.rag_probe`, piste 4 instruite)
+
+**Correction appliquée avant R3** (décision de gouvernance du
+2026-08-28) : modèle `intfloat/multilingual-e5-large` avec préfixes
+`query:`/`passage:` appliqués côté sonde (amendement consigné à la
+section « Modèle épinglé » ci-dessus). **Une seule variable modifiée
+depuis R2** : le corpus est celui du commit `48a2885` (inchangé depuis
+R2), questions françaises verbatim, même k, même échantillon.
+Inventaire inchangé : 19 chunks, mêmes identifiants.
+
+**Q1 — « que se passe-t-il quand on supprime un utilisateur ? »**
+
+| Rang | Score | Chunk |
+|---|---|---|
+| 1 | 0.8458 | `users.router.delete_user [RAG]` |
+| 2 | 0.8296 | `users.services.delete_user [RAG]` |
+| 3 | 0.8168 | `users.services.get_user [RAG]` |
+| 4 | 0.8164 | `users.services.update_user [RAG]` |
+| 5 | 0.8081 | `organizations.services.delete_organization [RAG]` |
+
+Aucune égalité à 4 décimales dans le top-5.
+Critère A : **VRAI** (rang 2). Critère B : **FAUX** —
+`users.models.User [MODEL]` au rang **6**/19 (0.8063, à **0.0018** du
+rang 5, en égalité à 4 décimales avec le rang 7).
+
+**Q2 — « comment une requête HTTP obtient-elle une session de base de
+données ? »**
+
+| Rang | Score | Chunk |
+|---|---|---|
+| 1 | 0.8654 | `core.database.get_db [RAG]` |
+| 2 | 0.8312 | `users.router.get_user [RAG]` |
+| 3 | 0.8309 | `users.services.get_user [RAG]` |
+| 4 | 0.8285 | `organizations.services.get_organization [RAG]` |
+| 5 | 0.8257 | `users.router.list_users [RAG]` |
+
+Aucune égalité à 4 décimales.
+Critère A : **VRAI** — `core.database.get_db [RAG]` au rang **1**, avec
+la plus forte marge du jalon (+0.0342 sur le rang 2). Critère B :
+**VRAI** (rangs 2 et 5).
+
+**Verdict R3 : Q2 SUCCÈS intégral — première question résolue du
+jalon ; Q1 ÉCHEC persistant sur le seul critère B.** Trajectoire des
+deux attendus sous variables de corpus gelées :
+
+- `get_db` sur Q2 : hors top-5 (R1) → rang 6 (R2) → **rang 1** (R3) —
+  l'hypothèse R1 (troncature de fenêtre) est **confirmée en creux** :
+  la fenêtre de 512 tokens absorbe le chunk entier, la sémantique de
+  session domine ;
+- `users.models.User [MODEL]` sur Q1 : hors top-5 (R1) → rang 9 (R2) →
+  **rang 6** (R3), à 0.0018 du seuil — progression monotone, mais un
+  bloc de métadonnées à synthèse française d'une ligne reste dominé par
+  cinq chunks de code porteurs de docstrings et de `[STEP]` complets.
+
+### [DIAGNOSTIC] 2026-08-28 — R3 measurement notes (English, per protocol §1)
+
+Full-ranking positions (19 chunks): Q1 → `User [MODEL]` 6th (0.8063,
+gap to 5th = 0.0018, tied at 4 decimals with `users.services.create_user`
+7th); Q2 → `get_db` **1st** (0.8654, margin +0.0342 over 2nd),
+`User [MODEL]` 19th, `init_db_engine` 16th. Score distribution is much
+tighter under e5-large (Q1 spread 0.7557–0.8458 vs 0.4062–0.5651 under
+MiniLM R1): asymmetric `query:`/`passage:` prefixing lifts all cosine
+scores; only relative order is meaningful. The remaining Q1-B failure is
+no longer a window problem (the `[MODEL]` block, 375 chars, fits any
+window): the one-line French synthesis plus pure-identifier metadata
+competes against full code chunks whose docstrings state deletion
+policies verbatim in French. Language migration of the corpus (CLAUDE.md
+§4 ter) is the next governed variable — R4 will measure it.
+
 ### Suite (gouvernance)
 
 La boucle de format (pistes 2–3) a produit un progrès mesurable mais
@@ -232,6 +318,16 @@ insuffisant sous le modèle épinglé. Conformément à l'arbitrage du
 instruire comme décision de gouvernance** (changement d'une variable
 gelée du protocole). Aucune autre correction n'est engagée sans
 validation.
+
+**Addendum post-R3 (2026-08-28)** : la piste 4 a été instruite et
+exécutée (relevé R3 ci-dessus) — Q2 résolue, Q1-B persiste à 0.0018 du
+seuil. Conformément à CLAUDE.md §4 ter (politique de langue, séquencement
+acté), la suite est la **migration linguistique du corpus indexable vers
+l'anglais** en trois lots gatés (générateurs, `app/`, `CONTRACTS.md`),
+puis l'amendement des questions du jalon (la langue des questions suit
+celle du corpus) et le **relevé R4** — arrêt après R4, verdict quel
+qu'il soit. R1–R3 restent intacts au constat ; la comparaison R3 → R4
+documentera l'effet de langue pour la phase 5.
 
 ### Pistes de correction possibles (identifiées à R1 — NON exécutées alors, statut mis à jour)
 

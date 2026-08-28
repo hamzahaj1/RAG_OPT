@@ -11,6 +11,11 @@ score cosinus à 4 décimales, égalités signalées, critères binaires
 évalués. Pas de base vectorielle, pas de framework RAG (R5) — l'index
 est une matrice numpy en mémoire.
 
+Depuis le relevé R3 (décision de gouvernance du 2026-08-28, piste 4) :
+modèle ``intfloat/multilingual-e5-large`` avec les préfixes d'usage e5
+``query:``/``passage:`` appliqués côté sonde — le corpus sur disque est
+inchangé.
+
 La qualification des modules réutilise celle du module d'analyse
 partagé (une seule définition de la notion).
 
@@ -33,7 +38,11 @@ from scripts.corpus_analysis import _module_qualified
 
 CODE_START_MARKER: str = "# [CODE_START]"
 
-EMBEDDING_MODEL: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+EMBEDDING_MODEL: str = "intfloat/multilingual-e5-large"
+
+PASSAGE_PREFIX: str = "passage: "
+
+QUERY_PREFIX: str = "query: "
 
 QUESTIONS: tuple[tuple[str, str], ...] = (
     ("Q1", "que se passe-t-il quand on supprime un utilisateur ?"),
@@ -209,12 +218,12 @@ def main() -> None:
 
     # [STEP 2] Vectoriser l'échantillon → matrice normalisée en mémoire
     model = TextEmbedding(EMBEDDING_MODEL)
-    matrix = np.array(list(model.embed([chunk.text for chunk in chunks])))
+    matrix = np.array(list(model.embed([PASSAGE_PREFIX + chunk.text for chunk in chunks])))
     matrix = matrix / np.linalg.norm(matrix, axis=1, keepdims=True)
 
     # [STEP 3] Relever chaque question → top-5 brut puis critères binaires
     for label, question in QUESTIONS:
-        query = np.array(list(model.embed([question])))[0]
+        query = np.array(list(model.embed([QUERY_PREFIX + question])))[0]
         query = query / np.linalg.norm(query)
         ranked = _rank(matrix, query, chunks)
         print(f"\n{label} — « {question} »")
