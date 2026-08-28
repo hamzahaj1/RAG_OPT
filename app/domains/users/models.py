@@ -1,5 +1,7 @@
 # [FILE] — app/domains/users/models.py
 # [MODEL]
+# synthese: Un User est référencé par comments.author_id (RESTRICT — blocage),
+#   organizations.owner_id (RESTRICT — blocage), tasks.assignee_id (SET NULL — désassignation).
 # entity: User
 # table: users
 # columns: created_at, email, full_name, hashed_password, id, role, updated_at

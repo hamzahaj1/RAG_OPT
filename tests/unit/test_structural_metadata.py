@@ -89,6 +89,15 @@ def test_model_blocks_carry_delete_policies(tmp_path: Path) -> None:
     assert "# referenced_by: comments.task_id -> CASCADE" in tasks_text
     assert "# entity: User\n# table: users" in users_text
 
+    # [STEP 4] Vérifier les synthèses françaises générées → gabarit et gloses figés (J11)
+    assert (
+        "# synthese: Un User est référencé par comments.author_id (RESTRICT — blocage),"
+        in users_text
+    )
+    assert "tasks.assignee_id (SET NULL — désassignation)." in users_text
+    assert "# synthese: Un Comment n'est référencé par aucune table." in comments_text
+    assert "# synthese: Un Task est référencé par comments.task_id" in tasks_text
+
 
 def test_schema_block_fields_and_anchor(tmp_path: Path) -> None:
     """Le bloc [SCHEMA] suit immédiatement ``# [FILE]`` avec ses trois champs."""
@@ -102,13 +111,16 @@ def test_schema_block_fields_and_anchor(tmp_path: Path) -> None:
     generate_structural_metadata.annotate_structure(app_dir, tmp_path / "TOPOLOGY.yaml")
     lines = (app_dir / "domains/users/schemas.py").read_text(encoding="utf-8").splitlines()
 
-    # [STEP 2] Vérifier ancrage et champs → domain, schemas, entity en ordre fixe
+    # [STEP 2] Vérifier ancrage et champs → synthèse en tête (J11), ordre fixe
     assert lines[0].startswith("# [FILE]")
     assert lines[1] == "# [SCHEMA]"
-    assert lines[2] == "# domain: users"
-    assert lines[3] == "# schemas: UserCreate(BaseModel)"
-    assert lines[4] == "# entity: User"
-    assert lines[5] == "# [/SCHEMA]"
+    assert lines[2] == (
+        "# synthese: Le schéma Pydantic du domaine users porte le contrat de l'entité User."
+    )
+    assert lines[3] == "# domain: users"
+    assert lines[4] == "# schemas: UserCreate(BaseModel)"
+    assert lines[5] == "# entity: User"
+    assert lines[6] == "# [/SCHEMA]"
 
 
 def test_stale_block_is_replaced_without_accumulation(tmp_path: Path) -> None:

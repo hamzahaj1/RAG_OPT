@@ -12,7 +12,10 @@ successives sur un code inchangé laissent l'arbre strictement identique.
 
 Le champ ``referenced_by`` des blocs [MODEL] porte la politique
 ``ondelete`` de chaque arête entrante — le signal RAG des questions de
-suppression du jalon 13.
+suppression du jalon 13. Amendement J11 (relevé R1) : la première ligne
+de chaque bloc est une **synthèse en français généré**, déterministe
+depuis les données FK (gabarit et gloses figés au plan § Formats),
+jamais rédigée à la main.
 
 Exécution : ``python -m scripts.generate_structural_metadata`` (second
 temps de ``make rag-annotate``).
@@ -40,6 +43,12 @@ MODEL_OPEN: str = "# [MODEL]"
 SCHEMA_CLOSE: str = "# [/SCHEMA]"
 
 SCHEMA_OPEN: str = "# [SCHEMA]"
+
+POLICY_GLOSSES: dict[str, str] = {
+    "CASCADE": "suppression en cascade",
+    "RESTRICT": "blocage",
+    "SET NULL": "désassignation",
+}
 
 TOPOLOGY_FILENAME: str = "TOPOLOGY.yaml"
 
@@ -73,8 +82,11 @@ def _format_model_block(
     lines: list[str]
     # ─────────────────────────────────────────
 
-    # [STEP 1] Assembler champs et marqueurs → bloc prêt à insérer
+    # [STEP 1] Assembler champs et marqueurs → synthèse française en tête (J11)
     lines = [MODEL_OPEN]
+    lines.extend(
+        format_field("synthese", _synthesis_of_model(model, referenced_by.get(model.table, [])))
+    )
     lines.extend(format_field("entity", model.entity))
     lines.extend(format_field("table", model.table))
     lines.extend(format_list_field("columns", list(model.columns)))
@@ -96,8 +108,9 @@ def _format_schema_block(domain: str, classes: tuple[str, ...], entity: str) -> 
     lines: list[str]
     # ─────────────────────────────────────────
 
-    # [STEP 1] Assembler champs et marqueurs → bloc prêt à insérer
+    # [STEP 1] Assembler champs et marqueurs → synthèse française en tête (J11)
     lines = [SCHEMA_OPEN]
+    lines.extend(format_field("synthese", _synthesis_of_schema(domain, classes, entity)))
     lines.extend(format_field("domain", domain))
     lines.extend(format_list_field("schemas", list(classes)))
     lines.extend(format_field("entity", entity))
@@ -170,6 +183,48 @@ def _splice_file_blocks(
         return False
     path.write_text(new_text, encoding="utf-8")
     return True
+
+
+def _synthesis_of_model(model: corpus_analysis.ModelInfo, referenced: list[str]) -> str:
+    """Synthèse française d'un modèle, générée depuis ses arêtes entrantes.
+
+    Gabarit figé (plan § Formats, amendement J11) : « Un {Entité} est
+    référencé par {table.colonne} ({politique} — {glose}), … » — gloses
+    figées par ``POLICY_GLOSSES`` ; sans arête entrante : « Un {Entité}
+    n'est référencé par aucune table. » Jamais rédigée à la main.
+    """
+    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    parts: list[str]
+    policy: str
+    source: str
+    # ─────────────────────────────────────────
+
+    # [STEP 1] Rendre chaque arête entrante avec sa glose → phrase déterministe
+    if not referenced:
+        return f"Un {model.entity} n'est référencé par aucune table."
+    parts = []
+    for entry in referenced:
+        source, policy = entry.split(" -> ")
+        parts.append(f"{source} ({policy} — {POLICY_GLOSSES.get(policy, policy)})")
+    return f"Un {model.entity} est référencé par {', '.join(parts)}."
+
+
+def _synthesis_of_schema(domain: str, classes: tuple[str, ...], entity: str) -> str:
+    """Synthèse française d'un module de schémas — comptage et entité.
+
+    Gabarit figé (plan § Formats, amendement J11) : « Le(s) {n} schéma(s)
+    Pydantic du domaine {domaine} porte(nt) le contrat de l'entité
+    {Entité}. » — accord déterministe sur le comptage.
+    """
+    # ─── ZONE DE DÉCLARATION DES VARIABLES ───
+    head: str
+    verb: str
+    # ─────────────────────────────────────────
+
+    # [STEP 1] Accorder tête et verbe sur le comptage → phrase déterministe
+    head = "Le schéma Pydantic" if len(classes) == 1 else f"Les {len(classes)} schémas Pydantic"
+    verb = "porte" if len(classes) == 1 else "portent"
+    return f"{head} du domaine {domain} {verb} le contrat de l'entité {entity}."
 
 
 def _topology_payload(graph: corpus_analysis.CorpusGraph) -> dict[str, object]:

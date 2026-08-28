@@ -191,10 +191,12 @@ Exemple réel (`get_db`) :
 #   users) — détail : TOPOLOGY.yaml
 ```
 
-**Repli des lignes longues (normatif)** : tout champ dont la ligne dépasse
-100 colonnes (borne Ruff du projet) est replié sur les séparateurs `, ` ;
-les lignes de continuation portent le préfixe `#   ` et la ligne coupée se
-termine par sa virgule. Exemple réel (`get_db`, 25 appelants) :
+**Repli des lignes longues (normatif ; précisé le 2026-08-28 avec les
+synthèses J11)** : tout champ dont la ligne dépasse 100 colonnes (borne
+Ruff du projet) est replié sur les séparateurs `, ` ; les lignes de
+continuation portent le préfixe `#   ` et la ligne coupée se termine par
+sa virgule. **À défaut de virgule** (phrases de synthèse), le repli se
+fait sur le dernier espace sous la borne — même préfixe de continuation. Exemple réel (`get_db`, 25 appelants) :
 
 ```python
 # called_by: comments.router.create_comment, comments.router.delete_comment,

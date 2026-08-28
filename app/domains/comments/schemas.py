@@ -1,5 +1,6 @@
 # [FILE] — app/domains/comments/schemas.py
 # [SCHEMA]
+# synthese: Les 4 schémas Pydantic du domaine comments portent le contrat de l'entité Comment.
 # domain: comments
 # schemas: CommentBase(BaseModel), CommentCreate(CommentBase), CommentRead(CommentBase),
 #   CommentUpdate(BaseModel)

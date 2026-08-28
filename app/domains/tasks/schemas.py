@@ -1,5 +1,6 @@
 # [FILE] — app/domains/tasks/schemas.py
 # [SCHEMA]
+# synthese: Les 4 schémas Pydantic du domaine tasks portent le contrat de l'entité Task.
 # domain: tasks
 # schemas: TaskBase(BaseModel), TaskCreate(TaskBase), TaskRead(TaskBase), TaskUpdate(BaseModel)
 # entity: Task

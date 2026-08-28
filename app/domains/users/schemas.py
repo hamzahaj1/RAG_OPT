@@ -1,5 +1,6 @@
 # [FILE] — app/domains/users/schemas.py
 # [SCHEMA]
+# synthese: Les 4 schémas Pydantic du domaine users portent le contrat de l'entité User.
 # domain: users
 # schemas: UserBase(BaseModel), UserCreate(UserBase), UserRead(UserBase), UserUpdate(BaseModel)
 # entity: User

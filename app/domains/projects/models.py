@@ -1,5 +1,6 @@
 # [FILE] — app/domains/projects/models.py
 # [MODEL]
+# synthese: Un Project est référencé par tasks.project_id (CASCADE — suppression en cascade).
 # entity: Project
 # table: projects
 # columns: created_at, description, id, name, organization_id, updated_at
