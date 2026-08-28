@@ -1,6 +1,7 @@
 # [FILE] — app/domains/organizations/schemas.py
 # [SCHEMA]
-# synthese: Les 4 schémas Pydantic du domaine organizations portent le contrat de l'entité Organization.
+# synthese: Les 4 schémas Pydantic du domaine organizations portent le contrat de l'entité
+#   Organization.
 # domain: organizations
 # schemas: OrganizationBase(BaseModel), OrganizationCreate(OrganizationBase),
 #   OrganizationRead(OrganizationBase), OrganizationUpdate(BaseModel)

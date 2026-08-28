@@ -214,16 +214,20 @@ def annotate_corpus(app_dir: Path) -> list[str]:
 def format_field(label: str, value: str) -> list[str]:
     """Rend un champ ``# label: valeur`` replié sous la borne de colonnes.
 
-    Le repli coupe sur les séparateurs ``, `` ; les lignes de continuation
-    portent le préfixe ``#  `` — le champ reste parsable ligne à ligne.
+    Le repli coupe sur les séparateurs ``, `` puis, à défaut de virgule
+    (phrases de synthèse), sur le dernier espace sous la borne ; les
+    lignes de continuation portent le préfixe ``#  `` — le champ reste
+    parsable ligne à ligne (plan § Formats, règle précisée le 2026-08-28).
     API partagée : le générateur structurel (jalon 11) consomme le même
     repli pour les blocs [MODEL]/[SCHEMA] — une seule définition du format.
     """
     # ─── ZONE DE DÉCLARATION DES VARIABLES ───
     current: str
+    cut: int
     lines: list[str]
     segment: str
     segments: list[str]
+    wrapped: list[str]
     # ─────────────────────────────────────────
 
     # [STEP 1] Retourner tel quel un champ court → cas nominal sans repli
@@ -242,7 +246,18 @@ def format_field(label: str, value: str) -> list[str]:
             lines.append(f"{current},")
             current = f"{CONTINUATION_PREFIX} {segment}"
     lines.append(current)
-    return lines
+
+    # [STEP 3] Replier sur l'espace à défaut de virgule → aucune ligne hors borne
+    wrapped = []
+    for line in lines:
+        while len(line) > MAX_LINE_LENGTH:
+            cut = line.rfind(" ", len(CONTINUATION_PREFIX) + 2, MAX_LINE_LENGTH + 1)
+            if cut <= 0:
+                break
+            wrapped.append(line[:cut])
+            line = f"{CONTINUATION_PREFIX} {line[cut + 1 :]}"
+        wrapped.append(line)
+    return wrapped
 
 
 def format_list_field(label: str, values: list[str]) -> list[str]:
